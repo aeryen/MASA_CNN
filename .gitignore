@@ -1,0 +1,9 @@
+# Created by .ignore support plugin (hsz.mobi)
+.idea/
+baselines/beer_data_123g/
+baselines/beer_data_1g/
+baselines/hotel_data_123g/
+baselines/hotel_data_1g/
+glove.6B.100d.txt
+glove.6B.300d.txt
+output/
