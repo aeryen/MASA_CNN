@@ -50,7 +50,7 @@ if __name__ == "__main__":
     logging.debug("Loading data...")
 
     if input_component == "ML_One":
-        x, y, vocabulary, vocabulary_inv, embed_matrix = data_helpers_oneAspect_glove.load_data(5)
+        x, y, vocabulary, vocabulary_inv, embed_matrix = data_helpers_oneAspect_glove.load_train_data(5)
 
         dater = DataHelperMLNormal(doc_level=LoadMethod.SENT, embed_type="glove",
                                    embed_dim=300, target_sent_len=50, target_doc_len=None, train_csv_file=truth_file,
