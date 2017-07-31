@@ -50,13 +50,13 @@ if __name__ == "__main__":
         raise NotImplementedError
 
     tt = TrainTask(data_helper=dater, am=am, input_component=input_component, middle_component=middle_component,
-                   batch_size=64, evaluate_every=1000, checkpoint_every=2000, max_to_keep=6,
+                   batch_size=4, evaluate_every=1000, checkpoint_every=2000, max_to_keep=6,
                    restore_path=None)
 
     start = timer()
     # n_fc variable controls how many fc layers you got at the end, n_conv does that for conv layers
 
-    tt.training(filter_sizes=[[1, 2, 3, 4, 5]], num_filters=80, l2_lambda=0, dropout_keep_prob=0.5,
+    tt.training(filter_sizes=[[3, 4, 5]], num_filters=80, l2_lambda=0, dropout_keep_prob=0.5,
                 batch_normalize=True, elu=True, fc=[128], n_steps=15000)
     end = timer()
     print((end - start))

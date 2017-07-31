@@ -27,6 +27,7 @@ class DataHelperHotelOne(DataHelper):
         self.doc_as_sent = doc_as_sent
 
         self.data_file_dir = './data/hotel_balance_LengthFix1_3000per/'
+        self.num_of_classes = 5
 
         self.load_all_data()
 

@@ -170,9 +170,6 @@ class TrainTask:
                     sess.run(tf.global_variables_initializer())
 
             def train_step(x_batch, y_batch):
-                """
-                A single training step
-                """
                 feed_dict = {
                     graph_input_x: x_batch,
                     graph_input_y: y_batch,
@@ -188,9 +185,6 @@ class TrainTask:
                     self.train_summary_writer.add_summary(summaries, step)
 
             def dev_step(x_batch, y_batch):
-                """
-                Evaluates model on a dev set
-                """
                 feed_dict = {
                     graph_input_x: x_batch,
                     graph_input_y: y_batch,
@@ -216,7 +210,7 @@ class TrainTask:
                 current_step = tf.train.global_step(sess, global_step)
                 if current_step % self.evaluate_every == 0:
                     print("\nEvaluation:")
-                    dev_batches = dh.DataHelperML.batch_iter(list(zip(self.test_data.value, self.test_data.label_instance)), self.batch_size, 1)
+                    dev_batches = DataHelper.batch_iter(list(zip(self.test_data.value, self.test_data.label_instance)), self.batch_size, 1)
                     for dev_batch in dev_batches:
                         if len(dev_batch) > 0:
                             small_dev_x, small_dev_y = list(zip(*dev_batch))

@@ -42,6 +42,7 @@ class NetworkBuilder:
             self.is_training = self.middle_comp.is_training
         except NameError:
             # print("is_training is not defined")
+            self.is_training = None
             pass
 
         prev_layer = self.middle_comp.get_last_layer_info()
@@ -53,7 +54,9 @@ class NetworkBuilder:
         else:
             raise NotImplementedError
 
-        self.loss = output.loss
         self.scores = output.scores
         self.predictions = output.predictions
+
+        self.loss = output.loss
+
         self.accuracy = output.accuracy
