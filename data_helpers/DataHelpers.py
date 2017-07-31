@@ -4,6 +4,7 @@ import logging
 import pickle
 import itertools
 import pkg_resources
+import os
 from collections import Counter
 
 
@@ -28,15 +29,18 @@ class DataHelper(object):
         self.embed_matrix = None
         self.vocabulary_size = 20000
 
-        self.glove_dir = pkg_resources.resource_filename('data_helpers', 'glove/')
+        self.glove_dir = os.path.join(os.path.dirname(__file__), 'glove/')
         self.glove_path = self.glove_dir + "glove.6B." + str(self.embedding_dim) + "d.txt"
-        self.w2v_dir = pkg_resources.resource_filename('data_helpers', 'w2v/')
+        self.w2v_dir = os.path.join(os.path.dirname(__file__), 'w2v/')
         self.w2v_path = self.w2v_dir + "GoogleNews-vectors-negative300.bin"
 
+        self.data_path = os.path.join(os.path.dirname(__file__), '..', 'data/')
+
         print("loading embedding.")
+        glove_pickle = os.path.join(os.path.dirname(__file__), 'glove.pickle')
         # [self.glove_words, self.glove_vectors] = self.load_glove_vector()
         # pickle.dump([self.glove_words, self.glove_vectors], open("glove.pickle", "wb"))
-        self.glove_words, self.glove_vectors = pickle.load(open("./data_helpers/glove.pickle", "rb"))
+        self.glove_words, self.glove_vectors = pickle.load(open(glove_pickle, "rb"))
         print("loading embedding completed.")
 
     def get_train_data(self):
@@ -163,7 +167,6 @@ class DataHelper(object):
         y_onehot = np.zeros((len(label_vector), total_class))
         y_onehot[np.arange(len(label_vector)), label_vector.astype(int)] = 1
         return y_onehot
-
 
     def build_content_vector(self, data):
         unk = self.vocab["<UNK>"]

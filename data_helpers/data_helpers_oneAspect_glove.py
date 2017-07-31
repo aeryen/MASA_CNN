@@ -26,7 +26,7 @@ class DataHelperHotelOne(DataHelper):
         logging.info("setting: %s is %s", "doc_as_sent", doc_as_sent)
         self.doc_as_sent = doc_as_sent
 
-        self.data_file_dir = './data/hotel_balance_LengthFix1_3000per/'
+        self.dataset_dir = self.data_path + 'hotel_balance_LengthFix1_3000per/'
         self.num_of_classes = 5
 
         self.load_all_data()
@@ -39,16 +39,16 @@ class DataHelperHotelOne(DataHelper):
         aspect_id should be 0 1 2 3 4 5
         """
 
-        sent_count = list(open(self.data_file_dir + self.sent_num_file[load_test], "r").readlines())
+        sent_count = list(open(self.dataset_dir + self.sent_num_file[load_test], "r").readlines())
         sent_count = [int(s) for s in sent_count if (len(s) > 0 and s != "\n")]
 
-        aspect_rating = list(open(self.data_file_dir + self.rating_file[load_test], "r").readlines())
+        aspect_rating = list(open(self.dataset_dir + self.rating_file[load_test], "r").readlines())
         aspect_rating = [s for s in aspect_rating if (len(s) > 0 and s != "\n")]
         y = [s.split(" ")[self.aspect_id] for s in aspect_rating]
         y = np.array(list(map(float, y))) - 1
         y_onehot = self.to_onehot(y, 5)
 
-        train_content = list(open(self.data_file_dir + self.content_file[load_test], "r").readlines())
+        train_content = list(open(self.dataset_dir + self.content_file[load_test], "r").readlines())
         train_content = [s.strip() for s in train_content]
         # Split by words
         x_text = [self.clean_str(sent) for sent in train_content]
