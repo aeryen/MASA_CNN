@@ -23,15 +23,15 @@ FLAGS = tf.flags.FLAGS
 FLAGS._parse_flags()
 print("\nParameters:")
 for attr, value in sorted(FLAGS.__flags.items()):
-    print("{}={}".format(attr.upper(), value))
+    print(("{}={}".format(attr.upper(), value)))
 print("")
 
 # Load data. Load your own data here
 print("Loading data...")
 x_test, y_test, vocabulary, vocabulary_inv, s_count = data_helpers_allAspect.load_test_data()
 # y_test = np.argmax(y_test, axis=1)
-print("Vocabulary size: {:d}".format(len(vocabulary)))
-print("Test set size {:d}".format(len(y_test)))
+print(("Vocabulary size: {:d}".format(len(vocabulary))))
+print(("Test set size {:d}".format(len(y_test))))
 
 print("\nEvaluating...\n")
 
@@ -102,14 +102,14 @@ for item in sentence_aspect_names:
     aspect_name_file.write("%s\n" % item)
 aspect_name_file.close()
 
-print("Total number of test examples: {}".format(len(y_test)))
+print(("Total number of test examples: {}".format(len(y_test))))
 for aspect_index in range(6):
     correct_predictions = all_prediction[:, aspect_index] == y_value[:, aspect_index]
     accuracy = np.mean(correct_predictions.astype(float))
-    print "accuracy\t" + str(aspect_index) + "\t" + str(accuracy)
+    print("accuracy\t" + str(aspect_index) + "\t" + str(accuracy))
 
     mse = np.mean((all_prediction[:, aspect_index] - y_value[:, aspect_index]) ** 2)
-    print "MSE\t" + str(aspect_index) + "\t" + str(mse)
+    print("MSE\t" + str(aspect_index) + "\t" + str(mse))
 # correct_predictions = float(sum(all_predictions == y_test))
 # average_accuracy = all_predictions.sum(axis=0) / float(all_predictions.shape[0])
 # print "\t" + str(average_accuracy)

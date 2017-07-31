@@ -34,4 +34,4 @@ predict_labels = predict_aspect_list[sentences_with_key]
 predict_labels = np.array(predict_labels)
 
 result_yifan = classification_report(sentences_true_label, predict_labels, digits=2)
-print result_yifan
+print(result_yifan)

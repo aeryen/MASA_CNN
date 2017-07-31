@@ -24,15 +24,15 @@ FLAGS = tf.flags.FLAGS
 FLAGS._parse_flags()
 print("\nParameters:")
 for attr, value in sorted(FLAGS.__flags.items()):
-    print("{}={}".format(attr.upper(), value))
+    print(("{}={}".format(attr.upper(), value)))
 print("")
 
 # Load data. Load your own data here
 print("Loading data...")
 x_test, y_overall, y_aspect, vocabulary, vocabulary_inv, s_count = data_helpers_allAspect_sway.load_test_data()
 # y_test = np.argmax(y_test, axis=1)
-print("Vocabulary size: {:d}".format(len(vocabulary)))
-print("Test set size {:d}".format(len(y_overall)))
+print(("Vocabulary size: {:d}".format(len(vocabulary))))
+print(("Test set size {:d}".format(len(y_overall))))
 
 print("\nEvaluating...\n")
 
@@ -98,21 +98,21 @@ np.savetxt("./runs/" + str(dir_code) + "/aspect_rating.out", aspect_prediction, 
 y_overall_value = np.argmax(y_overall, axis=1)
 y_aspect_value = np.argmax(y_aspect, axis=2) - 4
 
-print("Total number of test examples: {}".format(len(y_overall)))
+print(("Total number of test examples: {}".format(len(y_overall))))
 
 correct_predictions = all_prediction == y_overall_value
 accuracy = np.mean(correct_predictions)
-print "accuracy\toverall\t" + str(accuracy)
+print("accuracy\toverall\t" + str(accuracy))
 mse = np.mean((all_prediction - y_overall_value) ** 2)
-print "MSE\toverall\t" + str(mse) + "\n"
+print("MSE\toverall\t" + str(mse) + "\n")
 
 for aspect_index in range(5):
     correct_predictions = aspect_prediction[:, aspect_index] == y_aspect_value[:, aspect_index]
     accuracy = np.mean(correct_predictions)
-    print "accuracy\t" + str(aspect_index) + "\t" + str(accuracy)
+    print("accuracy\t" + str(aspect_index) + "\t" + str(accuracy))
 
     mse = np.mean((aspect_prediction[:, aspect_index] - y_aspect_value[:, aspect_index]) ** 2)
-    print "MSE\t" + str(aspect_index) + "\t" + str(mse)
+    print("MSE\t" + str(aspect_index) + "\t" + str(mse))
 # correct_predictions = float(sum(all_predictions == y_test))
 # average_accuracy = all_predictions.sum(axis=0) / float(all_predictions.shape[0])
 # print "\t" + str(average_accuracy)

@@ -71,9 +71,9 @@ class EvaluatorOrigin:
         # all_predictions = np.array(all_predictions)
         # average_accuracy = all_predictions.sum(axis=0) / float(all_predictions.shape[0])
         average_accuracy = correct_predictions / float(all_predictions.shape[0])
-        print("Total number of test examples: {}".format(len(self.test_data.label_instance)))
-        print("\t" + str(average_accuracy))
+        print(("Total number of test examples: {}".format(len(self.test_data.label_instance))))
+        print(("\t" + str(average_accuracy)))
 
         mse = np.mean((all_predictions - self.test_data.label_instance) ** 2)
-        print("MSE\t" + str(mse))
+        print(("MSE\t" + str(mse)))
         # print("Accuracy: {:g}".format(average_accuracy / float(len(y_test))))

@@ -67,7 +67,7 @@ def load_data_and_labels():
             train_line_index += 1
         x.append(review)
     # x_text = [s.split(" ") for s in x_text]
-    print "TOO LONG: " + str(too_long_counter)
+    print("TOO LONG: " + str(too_long_counter))
     return [x, y, train_count]
 
 
@@ -102,7 +102,7 @@ def load_test_data_and_labels():
 
             if len(tokens) > sent_length_target:
                 tokens = tokens[:sent_length_target]
-                print "\t" + str(len(tokens)) + "\t" + str(tokens)
+                print("\t" + str(len(tokens)) + "\t" + str(tokens))
             sentence_lens.append(len(tokens))
             review.append(tokens)
             train_line_index += 1
@@ -147,7 +147,7 @@ def build_vocab(reviews):
     # Mapping from index to word
     vocabulary_inv = [x[0] for x in word_counts.most_common()]
 
-    print "size of vocabulary: " + str(len(vocabulary_inv))
+    print("size of vocabulary: " + str(len(vocabulary_inv)))
     # vocabulary_inv = list(sorted(vocabulary_inv))
     vocabulary_inv = list(vocabulary_inv[:20000])  # limit vocab size
 

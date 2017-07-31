@@ -14,10 +14,10 @@ for i in range(5):
     pred = np.array(lines)
 
     mse_result = metrics.mean_squared_error(tru, pred)
-    print str(i) + "\tMSE"
-    print mse_result
+    print(str(i) + "\tMSE")
+    print(mse_result)
     r2_result = metrics.r2_score(tru, pred)
-    print str(i) + "\tR2"
-    print r2_result
+    print(str(i) + "\tR2")
+    print(r2_result)
 
-    print "  "
+    print("  ")

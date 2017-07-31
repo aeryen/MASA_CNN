@@ -25,14 +25,14 @@ class RegressCNN(object):
                 tf.random_uniform([vocab_size, embedding_size], -1.0, 1.0),
                 name="W")
             self.embedded_chars = tf.nn.embedding_lookup(W, self.input_x, name="embedded_chars")
-            print("self.embedded_chars " + str(self.embedded_chars.get_shape()))
+            print(("self.embedded_chars " + str(self.embedded_chars.get_shape())))
 
             # reshape to [batch * sent_size, num_word, embed_size]
             self.flat_sentence_dim = tf.reshape(self.embedded_chars, [-1, num_word, embedding_size])
-            print("self.flat_sentence_dim " + str(self.flat_sentence_dim.get_shape()))
+            print(("self.flat_sentence_dim " + str(self.flat_sentence_dim.get_shape())))
 
             self.embedded_chars_expanded = tf.expand_dims(self.flat_sentence_dim, -1)
-            print("self.embedded_chars_expanded " + str(self.embedded_chars_expanded.get_shape()))
+            print(("self.embedded_chars_expanded " + str(self.embedded_chars_expanded.get_shape())))
 
         # Create a convolution + maxpool layer for each filter size
         pooled_sentence_outputs = []
@@ -51,7 +51,7 @@ class RegressCNN(object):
                     padding="VALID",
                     name="conv")
                 # Apply nonlinearity
-                print("conv of filter_size " + str(filter_size) + ": " + str(conv.get_shape()))
+                print(("conv of filter_size " + str(filter_size) + ": " + str(conv.get_shape())))
                 h = tf.nn.relu(tf.nn.bias_add(conv, b), name="relu")
                 # Max-pooling over the outputs
                 # [batch_size * sentence, 1, 1, num_filters]
@@ -61,22 +61,22 @@ class RegressCNN(object):
                     strides=[1, 1, 1, 1],
                     padding='VALID',
                     name="pool")
-                print("pooled of filter_size " + str(filter_size) + ": " + str(pooled.get_shape()))
+                print(("pooled of filter_size " + str(filter_size) + ": " + str(pooled.get_shape())))
                 pooled_sentence_outputs.append(pooled)  # of sentence j of filter size f_s
 
         # Combine all the pooled features
         self.h_pool = tf.concat(3, pooled_sentence_outputs)
-        print("self.h_pool " + str(self.h_pool.get_shape()))
+        print(("self.h_pool " + str(self.h_pool.get_shape())))
         # [batch_size * sentence, num_filters_total]
         self.h_pool_flat = tf.reshape(self.h_pool, [-1, num_filters_total])
-        print("self.h_pool_flat " + str(self.h_pool_flat.get_shape()))
+        print(("self.h_pool_flat " + str(self.h_pool_flat.get_shape())))
         # pooled_review_outputs.append(pooled_sentence_outputs_over_f_size)
 
         # Add dropout
         with tf.name_scope("dropout-keep" + str(0.5)):
             # [batch_size * sentence, num_filters_total]
             self.h_drop = tf.nn.dropout(self.h_pool_flat, self.dropout_keep_prob)
-            print("self.h_drop " + str(self.h_drop.get_shape()))
+            print(("self.h_drop " + str(self.h_drop.get_shape())))
 
         # per sentence score
         # not the target is a hyperbolic score
@@ -94,7 +94,7 @@ class RegressCNN(object):
                     # scores.shape = [batch_size * sentence, num_classes]
                     scores = tf.nn.xw_plus_b(self.h_drop, W, b, name="score_a" + str(aspect_index))
                     aspect_value = tf.reshape(tf.tanh(scores), [-1], name="score_tanh_a" + str(aspect_index))  # tanh
-                    print("aspect_distribution " + str(aspect_index) + " : " + str(aspect_value.get_shape()))
+                    print(("aspect_distribution " + str(aspect_index) + " : " + str(aspect_value.get_shape())))
 
                     self.aspect_rating_prediction.append(aspect_value)
         # [batch_size * sentence, num_classes] * number_aspect
@@ -107,7 +107,7 @@ class RegressCNN(object):
             scores = tf.nn.xw_plus_b(self.h_drop, W, b, name="scores_related")
             # [batch_size * sentence, num_aspects]
             self.related_distribution = tf.nn.softmax(scores)
-            print("self.related_distribution " + str(self.related_distribution.get_shape()))
+            print(("self.related_distribution " + str(self.related_distribution.get_shape())))
 
         # W = tf.get_variable(
         #     "W_pred_a" + str(),
@@ -121,26 +121,26 @@ class RegressCNN(object):
                 # [batch_size * sentence, num_classes]
                 prob_aspect_sent = self.related_distribution[:, aspect_index]
 
-                print("prob_aspect_sent " + str(aspect_index) + " " + str(prob_aspect_sent.get_shape()))
+                print(("prob_aspect_sent " + str(aspect_index) + " " + str(prob_aspect_sent.get_shape())))
                 aspect_rating = tf.mul(self.aspect_rating_prediction[aspect_index], prob_aspect_sent,
                                        name="aspect-" + str(aspect_index) + "-scale")
-                print("scaled aspect_rating " + str(aspect_index) + " " + str(aspect_rating.get_shape()))
+                print(("scaled aspect_rating " + str(aspect_index) + " " + str(aspect_rating.get_shape())))
                 # scaled_aspect shape = [?] x 6
                 scaled_aspect.append(aspect_rating)
 
             # scaled_aspect(6, ?, 1) ??
             scaled_aspect = tf.pack(scaled_aspect)
-            print("scaled_aspect " + str(scaled_aspect.get_shape()))
+            print(("scaled_aspect " + str(scaled_aspect.get_shape())))
             # TODO VERY CAREFUL HERE
             # batch_sent_rating_aspect shape = [6 aspect, batch, sentence]
             batch_sent_rating_aspect = tf.reshape(scaled_aspect, [num_aspects, -1, num_sentence])
-            print("batch_sent_rating_aspect " + str(batch_sent_rating_aspect.get_shape()))
+            print(("batch_sent_rating_aspect " + str(batch_sent_rating_aspect.get_shape())))
 
             # [aspect, review]
             self.batch_review_aspect_score = tf.reduce_mean(batch_sent_rating_aspect, 2, name="output_score")
             self.batch_review_aspect_score = tf.add(tf.mul(self.batch_review_aspect_score, 2, name="rescale_mul"), 2,
                                                     name="rescale_add")  # y * 2 + 2 such that the value is 0~4
-            print("batch_review_aspect_score " + str(self.batch_review_aspect_score.get_shape()))
+            print(("batch_review_aspect_score " + str(self.batch_review_aspect_score.get_shape())))
 
         self.rate_percentage = [0, 0, 0, 0, 0]
         with tf.name_scope("prediction-ratio"):
@@ -152,7 +152,7 @@ class RegressCNN(object):
         # CalculateMean cross-entropy loss
         self.mse_aspect = []
         self.value_y = tf.cast(tf.argmax(self.input_y, 2, name="y_value"), "float")
-        print("value_y " + str(self.value_y.get_shape()))
+        print(("value_y " + str(self.value_y.get_shape())))
         with tf.name_scope("loss-lbd" + str(l2_reg_lambda)):
             # sum_along_rating = tf.reduce_sum(batch_sent_rating_aspect_score, 1)
             # self.normalized_dist = tf.div(batch_sent_rating_aspect_score, sum_along_rating)

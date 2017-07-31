@@ -111,7 +111,7 @@ class DataHelper(object):
         else:
             sent_lengths = [[len(sent) for sent in doc] for doc in data.value]
             max_length = max(sent_lengths)
-            print("longest doc: " + str(max_length))
+            print(("longest doc: " + str(max_length)))
 
         padded_sents = []
         for sent in data.value:
@@ -146,7 +146,7 @@ class DataHelper(object):
     def build_vocab(data, vocabulary_size):
         # Build vocabulary
         word_counts = Counter(DataHelper.chain(data))
-        word_counts = sorted(word_counts.items(), key=lambda t: t[::-1], reverse=True)
+        word_counts = sorted(list(word_counts.items()), key=lambda t: t[::-1], reverse=True)
         vocabulary_inv = [item[0] for item in word_counts]
         vocabulary_inv.insert(0, "<PAD>")
         vocabulary_inv.insert(1, "<UNK>")

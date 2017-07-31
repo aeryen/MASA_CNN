@@ -14,7 +14,7 @@ from networks.cnn_regress_a2a_onescore import RegressCNN
 
 
 def get_import_modules():
-    for name, val in globals().items():
+    for name, val in list(globals().items()):
         if isinstance(val, types.ModuleType):
             yield val.__name__
 
@@ -75,7 +75,7 @@ def train_one_nn(x_train, x_dev, y_train, y_dev, vocabulary, sc_train, sc_dev, e
             timestamp = str(int(time.time()))
             out_dir = os.path.abspath(os.path.join(os.path.curdir, "runs", "my regress onescore a2a", "loop_l2",
                                                    timestamp + "_" + str(num_filter)))
-            print("Writing to {}\n".format(out_dir))
+            print(("Writing to {}\n".format(out_dir)))
             write_hyperparams(out_dir=out_dir, FLAGS=FLAGS)
 
             # Summaries for loss and accuracy
@@ -141,7 +141,7 @@ def train_one_nn(x_train, x_dev, y_train, y_dev, vocabulary, sc_train, sc_dev, e
                     [train_op, global_step, train_summary_op, cnn.loss, cnn.accuracy, cnn.mse_aspects[0]],
                     feed_dict)
                 time_str = datetime.datetime.now().isoformat()
-                print("{}: step {}, loss {:g}, acc {:g}, mse {:g}".format(time_str, step, loss, accuracy, all_mse))
+                print(("{}: step {}, loss {:g}, acc {:g}, mse {:g}".format(time_str, step, loss, accuracy, all_mse)))
                 train_summary_writer.add_summary(summaries, step)
 
             def dev_step(x_batch, y_batch, sc_batch, writer=None):
@@ -158,7 +158,7 @@ def train_one_nn(x_train, x_dev, y_train, y_dev, vocabulary, sc_train, sc_dev, e
                     [global_step, dev_summary_op, cnn.loss, cnn.accuracy, cnn.mse_aspects[0]],
                     feed_dict)
                 time_str = datetime.datetime.now().isoformat()
-                print("{}: step {}, loss {:g}, acc {:g}, mse {:g}".format(time_str, step, loss, accuracy, all_mse))
+                print(("{}: step {}, loss {:g}, acc {:g}, mse {:g}".format(time_str, step, loss, accuracy, all_mse)))
                 if writer:
                     writer.add_summary(summaries, step)
 
@@ -167,7 +167,7 @@ def train_one_nn(x_train, x_dev, y_train, y_dev, vocabulary, sc_train, sc_dev, e
                 list(zip(x_train, y_train, sc_train)), FLAGS.batch_size, FLAGS.num_epochs)
             # Training loop. For each batch...
             for batch in batches:
-                x_batch, y_batch, sc_batch = zip(*batch)
+                x_batch, y_batch, sc_batch = list(zip(*batch))
                 train_step(x_batch, y_batch, sc_batch)
                 current_step = tf.train.global_step(sess, global_step)
                 if current_step % FLAGS.evaluate_every == 0:
@@ -175,12 +175,12 @@ def train_one_nn(x_train, x_dev, y_train, y_dev, vocabulary, sc_train, sc_dev, e
                     dev_batches = data_helpers_allAspect_glove \
                         .batch_iter(list(zip(x_dev, y_dev, sc_dev)), 64, 1)
                     for dev_batch in dev_batches:
-                        small_dev_x, small_dev_y, small_dev_sc = zip(*dev_batch)
+                        small_dev_x, small_dev_y, small_dev_sc = list(zip(*dev_batch))
                         dev_step(small_dev_x, small_dev_y, small_dev_sc, writer=dev_summary_writer)
                         print("")
                 if current_step % FLAGS.checkpoint_every == 0:
                     path = saver.save(sess, checkpoint_prefix, global_step=current_step)
-                    print("Saved model checkpoint to {}\n".format(path))
+                    print(("Saved model checkpoint to {}\n".format(path)))
                 if current_step == 4500:
                     break
 
@@ -212,7 +212,7 @@ if __name__ == "__main__":
 
     print("\nParameters:")
     for attr, value in sorted(FLAGS.__flags.items()):
-        print("{}={}".format(attr.upper(), value))
+        print(("{}={}".format(attr.upper(), value)))
     print("")
     # Load data
     print("Loading data...")
@@ -221,8 +221,8 @@ if __name__ == "__main__":
     time1 = time.time()
     x, y, vocabulary, vocabulary_inv, s_count, embed_matrix = data_helpers_allAspect_glove.load_data()
     time2 = time.time()
-    print 'Load Data took ' + str((time2 - time1) * 1000.0) + ' ms'
-    print 'x have a size of ' + str(sys.getsizeof(x) / 1024.0) + 'kbytes'
+    print('Load Data took ' + str((time2 - time1) * 1000.0) + ' ms')
+    print('x have a size of ' + str(sys.getsizeof(x) / 1024.0) + 'kbytes')
 
     # Randomly shuffle data
     np.random.seed(10)
@@ -235,8 +235,8 @@ if __name__ == "__main__":
     y_train, y_dev = y_shuffled[:-1000], y_shuffled[-1000:]
     sc_train, sc_dev = sc_shuffled[:-1000], sc_shuffled[-1000:]
 
-    print("Vocabulary Size: {:d}".format(len(vocabulary)))
-    print("Train/Dev split: {:d}/{:d}".format(len(y_train), len(y_dev)))
+    print(("Vocabulary Size: {:d}".format(len(vocabulary))))
+    print(("Train/Dev split: {:d}/{:d}".format(len(y_train), len(y_dev))))
 
     for num_filter in [0.8]:
         train_one_nn(x_train, x_dev, y_train, y_dev, vocabulary, sc_train, sc_dev, embed_matrix, num_filter)

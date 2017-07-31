@@ -59,13 +59,13 @@ def load_data_and_labels():
             tokens = x_text[train_line_index].split()
 
             if len(tokens) > 65:
-                print str(len(tokens)) + "\t" + x_text[train_line_index]
+                print(str(len(tokens)) + "\t" + x_text[train_line_index])
                 x_text[train_line_index] = x_text[train_line_index].replace("\?", "")
                 x_text[train_line_index] = x_text[train_line_index].replace("(", "")
                 x_text[train_line_index] = x_text[train_line_index].replace(")", "")
                 x_text[train_line_index] = re.sub(r'[0-9]', '', x_text[train_line_index])
                 tokens = x_text[train_line_index].split()
-                print "\t" + str(len(tokens)) + "\t" + x_text[train_line_index]
+                print("\t" + str(len(tokens)) + "\t" + x_text[train_line_index])
             sentence_lens.append(len(tokens))
             review.append(tokens)
             train_line_index += 1
@@ -109,7 +109,7 @@ def load_test_data_and_labels():
             tokens = x_text[train_line_index].split()
 
             if len(tokens) > 65:
-                print str(len(tokens)) + "\t" + x_text[train_line_index]
+                print(str(len(tokens)) + "\t" + x_text[train_line_index])
                 x_text[train_line_index] = x_text[train_line_index].replace("\?", "")
                 x_text[train_line_index] = x_text[train_line_index].replace("(", "")
                 x_text[train_line_index] = x_text[train_line_index].replace(")", "")
@@ -117,7 +117,7 @@ def load_test_data_and_labels():
                 tokens = x_text[train_line_index].split()
                 if len(tokens) > 67:
                     tokens = tokens[:67]
-                print "\t" + str(len(tokens)) + "\t" + x_text[train_line_index]
+                print("\t" + str(len(tokens)) + "\t" + x_text[train_line_index])
             sentence_lens.append(len(tokens))
             review.append(tokens)
             train_line_index += 1
@@ -163,7 +163,7 @@ def build_vocab(reviews):
     # TODO limit vocab size
     vocabulary_inv = [x[0] for x in word_counts.most_common()]
 
-    print "size of vocabulary: " + str(len(vocabulary_inv))
+    print("size of vocabulary: " + str(len(vocabulary_inv)))
     # vocabulary_inv = list(sorted(vocabulary_inv))
     vocabulary_inv = list(vocabulary_inv[:20000])  # limit vocab size
 

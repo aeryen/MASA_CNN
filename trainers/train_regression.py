@@ -37,7 +37,7 @@ FLAGS = tf.flags.FLAGS
 FLAGS._parse_flags()
 print("\nParameters:")
 for attr, value in sorted(FLAGS.__flags.items()):
-    print("{}={}".format(attr.upper(), value))
+    print(("{}={}".format(attr.upper(), value)))
 print("")
 
 # Data Preparation
@@ -50,8 +50,8 @@ print("Loading data...")
 time1 = time.time()
 x, y, vocabulary, vocabulary_inv = data_helpers_allAspect.load_data()
 time2 = time.time()
-print 'Load Data took ' + str((time2 - time1) * 1000.0) + ' ms'
-print 'x have a size of ' + str(sys.getsizeof(x) / 1024.0) + 'kbytes'
+print('Load Data took ' + str((time2 - time1) * 1000.0) + ' ms')
+print('x have a size of ' + str(sys.getsizeof(x) / 1024.0) + 'kbytes')
 
 # pickle.dump([x, y, vocabulary, vocabulary_inv], open("xyvocab.pickle", "wb"))
 # else:
@@ -66,8 +66,8 @@ y_shuffled = y[shuffle_indices]
 # TODO: This is very crude, should use cross-validation
 x_train, x_dev = x_shuffled[:-1000], x_shuffled[-1000:]
 y_train, y_dev = y_shuffled[:-1000], y_shuffled[-1000:]
-print("Vocabulary Size: {:d}".format(len(vocabulary)))
-print("Train/Dev split: {:d}/{:d}".format(len(y_train), len(y_dev)))
+print(("Vocabulary Size: {:d}".format(len(vocabulary))))
+print(("Train/Dev split: {:d}/{:d}".format(len(y_train), len(y_dev))))
 
 # Training
 # ==================================================
@@ -109,7 +109,7 @@ with tf.Graph().as_default():
         # Output directory for models and summaries
         timestamp = str(int(time.time()))
         out_dir = os.path.abspath(os.path.join(os.path.curdir, "runs", timestamp))
-        print("Writing to {}\n".format(out_dir))
+        print(("Writing to {}\n".format(out_dir)))
 
         # Summaries for loss and accuracy
         # global loss
@@ -166,7 +166,7 @@ with tf.Graph().as_default():
                 [train_op, global_step, train_summary_op, cnn.loss, cnn.accuracy, cnn.mse_aspects[0]],
                 feed_dict)
             time_str = datetime.datetime.now().isoformat()
-            print("{}: step {}, loss {:g}, acc {:g}, mse {:g}".format(time_str, step, loss, accuracy, all_mse))
+            print(("{}: step {}, loss {:g}, acc {:g}, mse {:g}".format(time_str, step, loss, accuracy, all_mse)))
             train_summary_writer.add_summary(summaries, step)
 
 
@@ -183,7 +183,7 @@ with tf.Graph().as_default():
                 [global_step, dev_summary_op, cnn.loss, cnn.accuracy, cnn.mse_aspects[0]],
                 feed_dict)
             time_str = datetime.datetime.now().isoformat()
-            print("{}: step {}, loss {:g}, acc {:g}, mse {:g}".format(time_str, step, loss, accuracy, all_mse))
+            print(("{}: step {}, loss {:g}, acc {:g}, mse {:g}".format(time_str, step, loss, accuracy, all_mse)))
             if writer:
                 writer.add_summary(summaries, step)
 
@@ -193,7 +193,7 @@ with tf.Graph().as_default():
             list(zip(x_train, y_train)), FLAGS.batch_size, FLAGS.num_epochs)
         # Training loop. For each batch...
         for batch in batches:
-            x_batch, y_batch = zip(*batch)
+            x_batch, y_batch = list(zip(*batch))
             train_step(x_batch, y_batch)
             current_step = tf.train.global_step(sess, global_step)
             # if current_step % FLAGS.evaluate_every == 0:
@@ -202,4 +202,4 @@ with tf.Graph().as_default():
             #     print("")
             if current_step % FLAGS.checkpoint_every == 0:
                 path = saver.save(sess, checkpoint_prefix, global_step=current_step)
-                print("Saved model checkpoint to {}\n".format(path))
+                print(("Saved model checkpoint to {}\n".format(path)))

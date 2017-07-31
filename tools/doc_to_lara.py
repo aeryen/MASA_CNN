@@ -18,10 +18,10 @@ def _dump_svmlight(X, y, f, one_based, query_id):
     for i in range(X.shape[0]):
         if is_sp:
             span = slice(X.indptr[i], X.indptr[i + 1])
-            row = zip(X.indices[span], X.data[span])
+            row = list(zip(X.indices[span], X.data[span]))
         else:
             nz = X[i] != 0
-            row = zip(np.where(nz)[0], X[i, nz])
+            row = list(zip(np.where(nz)[0], X[i, nz]))
 
         s = " ".join(value_pattern % (j + one_based, x) for j, x in row)
 
@@ -47,7 +47,7 @@ train_content.extend(test_content)
 
 count_vect = CountVectorizer(max_features=20000).fit(train_content)
 X_train_counts = count_vect.transform(train_content)
-print X_train_counts.shape
+print(X_train_counts.shape)
 
 # =================================================================================
 

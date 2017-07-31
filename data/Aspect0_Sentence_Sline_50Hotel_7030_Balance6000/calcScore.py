@@ -10,13 +10,13 @@ if (len(sys.argv) > 2) & (sys.argv[2] == "test"):
 reviewOfAspect = {}
 for ratingIndex in range(0, 5):
     countFilePath = testPrefix + "aspect_" + str(aspectID) + "_rate_" + str(ratingIndex + 1) + ".count"
-    print("loading count file: " + countFilePath)
+    print(("loading count file: " + countFilePath))
     lineCountFile = open(countFilePath, "r")
     countLines = lineCountFile.readlines()
     num_Aspect_Review = len(countLines)
     # num_ReviewPerAspect[ratingIndex] = num_Review
 
-    print("\tRate " + str(ratingIndex + 1) + " Review: " + str(num_Aspect_Review))
+    print(("\tRate " + str(ratingIndex + 1) + " Review: " + str(num_Aspect_Review)))
 
     sentenceCountList = []
     sumLine = 0
@@ -26,15 +26,15 @@ for ratingIndex in range(0, 5):
     for i in range(0, num_Aspect_Review):
         sumLine = sumLine + int(countLines[i])
         sentenceCountList.append(int(countLines[i]))
-    print("\tTotal lines expected based on count file: " + str(sumLine))
+    print(("\tTotal lines expected based on count file: " + str(sumLine)))
 
     sentenceDataFilePath = testPrefix + "aspect_" + str(aspectID) + "_rate_" + str(ratingIndex + 1) + ".txt"
-    print("\tloading sentence file: " + sentenceDataFilePath)
+    print(("\tloading sentence file: " + sentenceDataFilePath))
     sentenceFile = open(sentenceDataFilePath, "r")
     sentenceLines = sentenceFile.readlines()
     num_Sentence = len(sentenceLines)
 
-    print("\tTotal actual sentence: " + str(num_Sentence))
+    print(("\tTotal actual sentence: " + str(num_Sentence)))
 
     if (num_Sentence == sumLine):
         print("\tLine count matched")
@@ -67,7 +67,7 @@ formatOutputFile = open(testPrefix + "compile.out", "w")
 mse = 0.0
 # totalReview = 0
 # for k, v in reviewOfAspect:
-totalReview = sum([len(v) for k, v in reviewOfAspect.items()])
+totalReview = sum([len(v) for k, v in list(reviewOfAspect.items())])
 globalSentenceIndex = 0
 
 for ratingIndex in range(0, 5):
@@ -98,7 +98,7 @@ for ratingIndex in range(0, 5):
         formatOutputFile.write(
             "real: " + str(ratingIndex) + "\t diff: " + str(reviewRatingAvg - ratingIndex) + "\n")
 
-        print 'difference: ' + str(reviewRatingAvg - ratingIndex)
+        print('difference: ' + str(reviewRatingAvg - ratingIndex))
         mse += (reviewRatingAvg - ratingIndex) ** 2
 
         # "c:\t" + str(sentenceCount) + "\t" +

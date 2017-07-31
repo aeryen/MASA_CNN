@@ -25,7 +25,7 @@ FLAGS = tf.flags.FLAGS
 FLAGS._parse_flags()
 print("\nParameters:")
 for attr, value in sorted(FLAGS.__flags.items()):
-    print("{}={}".format(attr.upper(), value))
+    print(("{}={}".format(attr.upper(), value)))
 print("")
 
 # Load data. Load your own data here
@@ -33,15 +33,15 @@ print("Loading data...")
 x, y, vocabulary, vocabulary_inv, s_count = data_helpers_allAspect_glove.load_test_data()
 y_overall = y[:, 2, :]
 # y_test = np.argmax(y_test, axis=1)
-print("Vocabulary size: {:d}".format(len(vocabulary)))
-print("Test set size {:d}".format(len(y_overall)))
+print(("Vocabulary size: {:d}".format(len(vocabulary))))
+print(("Test set size {:d}".format(len(y_overall))))
 
 print("\nEvaluating...\n")
 
 # Evaluation
 # ==================================================
 checkpoint_file = tf.train.latest_checkpoint(FLAGS.checkpoint_dir)
-print "latest check point file" + str(checkpoint_file)
+print("latest check point file" + str(checkpoint_file))
 graph = tf.Graph()
 with graph.as_default():
     session_conf = tf.ConfigProto(
@@ -92,10 +92,10 @@ np.savetxt(parent_dir + str(dir_code) + "/all_rating.out", all_prediction + 1, f
 
 y_overall_value = np.argmax(y_overall, axis=1)
 
-print("Total number of test examples: {}".format(len(y_overall)))
+print(("Total number of test examples: {}".format(len(y_overall))))
 
 correct_predictions = all_prediction == y_overall_value
 accuracy = np.mean(correct_predictions)
-print "accuracy\toverall\t" + str(accuracy)
+print("accuracy\toverall\t" + str(accuracy))
 mse = np.mean((all_prediction - y_overall_value) ** 2)
-print "MSE\toverall\t" + str(mse) + "\n"
+print("MSE\toverall\t" + str(mse) + "\n")

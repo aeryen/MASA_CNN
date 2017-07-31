@@ -99,10 +99,10 @@ for sentence in x_text:
                     correct_count[aspect_index] += 1
                     break
 
-print(str(correct_count))
-print(str(aspect_sentence_count))
+print((str(correct_count)))
+print((str(aspect_sentence_count)))
 result = np.divide(correct_count, aspect_sentence_count)
-print(str(result))
-print
-print "total " + str(total_sent_correct) + " / " + str(total_sent_count)
-print "= " + str(total_sent_correct / float(total_sent_count))
+print((str(result)))
+print()
+print("total " + str(total_sent_correct) + " / " + str(total_sent_count))
+print("= " + str(total_sent_correct / float(total_sent_count)))

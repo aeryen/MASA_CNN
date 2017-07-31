@@ -31,14 +31,14 @@ class BetterCNN(object):
             else:
                 W = tf.Variable(init_embedding, name="W", dtype="float32")
             self.embedded_chars = tf.nn.embedding_lookup(W, self.input_x, name="embedded_chars")
-            print("self.embedded_chars " + str(self.embedded_chars.get_shape()))
+            print(("self.embedded_chars " + str(self.embedded_chars.get_shape())))
 
             # reshape to [batch * sent_size, num_word, embed_size]
             self.flat_sentence_dim = tf.reshape(self.embedded_chars, [-1, num_word, embedding_size])
-            print("self.flat_sentence_dim " + str(self.flat_sentence_dim.get_shape()))
+            print(("self.flat_sentence_dim " + str(self.flat_sentence_dim.get_shape())))
 
             self.embedded_chars_expanded = tf.expand_dims(self.flat_sentence_dim, -1)
-            print("self.embedded_chars_expanded " + str(self.embedded_chars_expanded.get_shape()))
+            print(("self.embedded_chars_expanded " + str(self.embedded_chars_expanded.get_shape())))
 
         # Create a convolution + maxpool layer for each filter size
         pooled_sentence_outputs = []
@@ -57,7 +57,7 @@ class BetterCNN(object):
                     padding="VALID",
                     name="conv")
                 # Apply nonlinearity
-                print("conv of filter_size " + str(filter_size) + ": " + str(conv.get_shape()))
+                print(("conv of filter_size " + str(filter_size) + ": " + str(conv.get_shape())))
                 h = tf.nn.relu(tf.nn.bias_add(conv, b), name="relu")
                 # Max-pooling over the outputs
                 # [batch_size * sentence, 1, 1, num_filters]
@@ -67,26 +67,26 @@ class BetterCNN(object):
                     strides=[1, 1, 1, 1],
                     padding='VALID',
                     name="pool")
-                print("pooled of filter_size " + str(filter_size) + ": " + str(pooled.get_shape()))
+                print(("pooled of filter_size " + str(filter_size) + ": " + str(pooled.get_shape())))
                 pooled_sentence_outputs.append(pooled)  # of sentence j of filter size f_s
 
         # Combine all the pooled features along dim 3
         self.h_pool = tf.concat(3, pooled_sentence_outputs)
-        print("self.h_pool " + str(self.h_pool.get_shape()))
+        print(("self.h_pool " + str(self.h_pool.get_shape())))
         # [batch_size * sentence, num_filters_total]
         self.h_pool_flat = tf.reshape(self.h_pool, [-1, num_filters_total])
-        print("self.h_pool_flat " + str(self.h_pool_flat.get_shape()))
+        print(("self.h_pool_flat " + str(self.h_pool_flat.get_shape())))
         # pooled_review_outputs.append(pooled_sentence_outputs_over_f_size)
 
         # Add dropout
         with tf.name_scope("dropout-keep"):
             # [batch_size * sentence, num_filters_total]
             self.h_drop_sentence = tf.nn.dropout(self.h_pool_flat, self.dropout_keep_prob, name="h_drop_sentence")
-            print("self.h_drop_sentence " + str(self.h_drop_sentence.get_shape()))
+            print(("self.h_drop_sentence " + str(self.h_drop_sentence.get_shape())))
             # [batch_size, sentence * num_filters_total]
             self.h_drop_review = tf.reshape(self.h_drop_sentence, [-1, num_sentence * num_filters_total],
                                             name="h_drop_review")
-            print("self.h_drop_review " + str(self.h_drop_review.get_shape()))
+            print(("self.h_drop_review " + str(self.h_drop_review.get_shape())))
 
         self.aspect_rating_score = []
         with tf.name_scope("rating-score"):
@@ -102,11 +102,11 @@ class BetterCNN(object):
                 l2_loss += tf.nn.l2_loss(W)
                 # overall_scores.shape = [review, 5]
                 self.overall_scores = tf.nn.xw_plus_b(self.h_drop_review, W, b, name="scores_all")
-                print("self.overall_scores " + str(self.overall_scores.get_shape()))
+                print(("self.overall_scores " + str(self.overall_scores.get_shape())))
 
                 # overall_distribution.shape = [review, 5]
                 self.overall_distribution = tf.nn.softmax(self.overall_scores, name="dist_all")
-                print("self.overall_distribution : " + str(self.overall_distribution.get_shape()))
+                print(("self.overall_distribution : " + str(self.overall_distribution.get_shape())))
 
             """Aspect Class, Each sentence have one class distribution"""
             with tf.name_scope("aspect"):
@@ -120,7 +120,7 @@ class BetterCNN(object):
                 # scores.shape = [batch_size * sentence] # 6 score for each sentence
                 self.aspect_rating_score = tf.nn.xw_plus_b(self.h_drop_sentence, W, b, name="score_asp")
                 # scores = tf.reshape(scores, [-1], name="score_a" + str(aspect_index))
-                print("self.aspect_rating_score " + str(self.aspect_rating_score.get_shape()))
+                print(("self.aspect_rating_score " + str(self.aspect_rating_score.get_shape())))
 
         """6 aspect Aspect Attribution"""
         with tf.name_scope("related"):
@@ -134,7 +134,7 @@ class BetterCNN(object):
             scores = tf.nn.xw_plus_b(self.h_drop_sentence, W, b, name="scores_related")
             # [batch_size * sentence, num_aspects]
             self.related_distribution = tf.nn.softmax(scores, name="softmax_related")
-            print("self.related_distribution " + str(self.related_distribution.get_shape()))
+            print(("self.related_distribution " + str(self.related_distribution.get_shape())))
 
         """Scale score using attribution, only the 5 aspect, throw the "other" attribution weight"""
         scaled_aspect = []
@@ -146,21 +146,21 @@ class BetterCNN(object):
 
                 aspect_rating = tf.mul(self.aspect_rating_score, prob_aspect_sent,
                                        name="aspect-" + str(aspect_index) + "-scale")
-                print("scaled aspect_rating " + str(aspect_index) + " " + str(aspect_rating.get_shape()))
+                print(("scaled aspect_rating " + str(aspect_index) + " " + str(aspect_rating.get_shape())))
 
                 scaled_aspect.append(aspect_rating)
 
             # scaled_aspect(5 aspect, ?, 5)
             scaled_aspect = tf.pack(scaled_aspect)
-            print("scaled_aspect " + str(scaled_aspect.get_shape()))
+            print(("scaled_aspect " + str(scaled_aspect.get_shape())))
             # TODO VERY CAREFUL HERE
             batch_sent_rating_aspect = tf.reshape(scaled_aspect, [num_aspects - 1, -1, num_sentence, num_classes],
                                                   name="output_score")
-            print("batch_sent_rating_aspect " + str(batch_sent_rating_aspect.get_shape()))
+            print(("batch_sent_rating_aspect " + str(batch_sent_rating_aspect.get_shape())))
 
             # [5 aspect, review, rating]
             self.batch_review_aspect_score = tf.reduce_sum(batch_sent_rating_aspect, 2)
-            print("batch_review_aspect_score " + str(self.batch_review_aspect_score.get_shape()))
+            print(("batch_review_aspect_score " + str(self.batch_review_aspect_score.get_shape())))
 
             # [6 aspect, review, rating scores]
             self.batch_review_aspect_score = tf.concat(concat_dim=0,
@@ -168,11 +168,11 @@ class BetterCNN(object):
                                                            tf.expand_dims(self.overall_scores, 0),
                                                            self.batch_review_aspect_score],
                                                        name="output_scores")
-            print("batch_review_aspect_score " + str(self.batch_review_aspect_score.get_shape()))
+            print(("batch_review_aspect_score " + str(self.batch_review_aspect_score.get_shape())))
 
             # [6 aspect, review]
             self.predictions = tf.argmax(self.batch_review_aspect_score, 2, name="output_value")
-            print("self.predictions " + str(self.predictions.get_shape()))
+            print(("self.predictions " + str(self.predictions.get_shape())))
 
         self.rate_percentage = [0, 0, 0, 0, 0]
         with tf.name_scope("prediction-ratio"):

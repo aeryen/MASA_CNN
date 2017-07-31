@@ -22,10 +22,10 @@ aspect_keywords = [["none"], ["value"], ["room"], ["location"], ["cleanliness"],
 
 result_yifan = classification_report(aspect_yifan[:500], predict_aspect_list[:500],
                                      labels=["value", "room", "location", "cleanliness", "service"], digits=2)
-print result_yifan
+print(result_yifan)
 
-print '\n'
+print('\n')
 
 result_fan = classification_report(aspect_fan[:500], predict_aspect_list[:500],
                                    labels=["value", "room", "location", "cleanliness", "service"], digits=2)
-print result_fan
+print(result_fan)
