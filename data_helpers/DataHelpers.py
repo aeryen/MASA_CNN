@@ -1,6 +1,7 @@
 import numpy as np
 import re
 import logging
+import pickle
 import itertools
 import pkg_resources
 from collections import Counter
@@ -27,12 +28,16 @@ class DataHelper(object):
         self.embed_matrix = None
         self.vocabulary_size = 20000
 
-        self.glove_dir = pkg_resources.resource_filename('datahelpers', 'glove/')
+        self.glove_dir = pkg_resources.resource_filename('data_helpers', 'glove/')
         self.glove_path = self.glove_dir + "glove.6B." + str(self.embedding_dim) + "d.txt"
-        self.w2v_dir = pkg_resources.resource_filename('datahelpers', 'w2v/')
+        self.w2v_dir = pkg_resources.resource_filename('data_helpers', 'w2v/')
         self.w2v_path = self.w2v_dir + "GoogleNews-vectors-negative300.bin"
 
-        [self.glove_words, self.glove_vectors] = self.load_glove_vector()
+        print("loading embedding.")
+        # [self.glove_words, self.glove_vectors] = self.load_glove_vector()
+        # pickle.dump([self.glove_words, self.glove_vectors], open("glove.pickle", "wb"))
+        self.glove_words, self.glove_vectors = pickle.load(open("./data_helpers/glove.pickle", "rb"))
+        print("loading embedding completed.")
 
     def get_train_data(self):
         return self.train_data
@@ -47,23 +52,20 @@ class DataHelper(object):
         return self.vocab_inv
 
     def clean_str(self, string):
-        """
-        Tokenization/string cleaning for all datasets except for SST.
-        Original taken from https://github.com/yoonkim/CNN_sentence/blob/master/process_data.py
-        """
-        string = re.sub(r"[^A-Za-z0-9(),!?\'\`]", " ", string)
-        string = re.sub(r"\'s", " \'s", string)
-        string = re.sub(r"\'ve", " \'ve", string)
-        string = re.sub(r"n\'t", " n\'t", string)
-        string = re.sub(r"\'re", " \'re", string)
-        string = re.sub(r"\'d", " \'d", string)
-        string = re.sub(r"\'ll", " \'ll", string)
-        string = re.sub(r",", " , ", string)
-        string = re.sub(r"!", " ! ", string)
-        string = re.sub(r"\(", " \( ", string)
-        string = re.sub(r"\)", " \) ", string)
-        string = re.sub(r"\?", " \? ", string)
-        string = re.sub(r"\s{2,}", " ", string)
+        # string = re.sub(r"[^A-Za-z0-9(),!?\'\`]", " ", string)
+        string = re.sub("\'", " \' ", string)
+        string = re.sub("\"", " \" ", string)
+        string = re.sub("-", " - ", string)
+
+        string = re.sub(",", " , ", string)
+        string = re.sub("\.", " \. ", string)
+        string = re.sub("!", " ! ", string)
+        string = re.sub("\?", " \? ", string)
+
+        string = re.sub(r"[(\[{]", " ( ", string)
+        string = re.sub(r"[)\]}]", " ) ", string)
+        string = re.sub("\s{2,}", " ", string)
+
         return string.strip().lower()
 
     def load_glove_vector(self):
@@ -104,37 +106,41 @@ class DataHelper(object):
         return padded_sentences
 
     def pad_sentences(self, data):
-        if self.target_sent_len > 0:
+        if self.target_sent_len is not None and self.target_sent_len > 0:
             max_length = self.target_sent_len
         else:
             sent_lengths = [[len(sent) for sent in doc] for doc in data.value]
             max_length = max(sent_lengths)
             print("longest doc: " + str(max_length))
 
-        padded_docs = []
-        for doc in data.value:
-            padded_doc = []
-            for sent_i in range(len(doc)):
-                sent = doc[sent_i]
-                if len(sent) <= max_length:
-                    num_padding = max_length - len(sent)
-                    new_sentence = np.concatenate([sent, np.zeros(num_padding, dtype=np.int)])
-                else:
-                    new_sentence = sent[:max_length]
-                padded_doc.append(new_sentence)
-            padded_docs.append(np.array(padded_doc))
-            data.value = np.array(padded_docs)
+        padded_sents = []
+        for sent in data.value:
+            if len(sent) <= max_length:
+                num_padding = max_length - len(sent)
+                new_sentence = np.concatenate([sent, np.zeros(num_padding, dtype=np.int)])
+            else:
+                new_sentence = sent[:max_length]
+
+            padded_sents.append(new_sentence)
+        data.value = np.array(padded_sents)
         return data
+
+    @staticmethod
+    def concat_to_doc(sent_list, sent_count):
+        start_index = 0
+        docs = []
+        for s in sent_count:
+            doc = " <LB> ".join(sent_list[start_index:start_index+s])
+            docs.append(doc)
+            start_index = start_index + s
+        return docs
 
     @staticmethod
     def chain(data_splits):
         for data in data_splits:
-            for doc in data.raw:
-                if doc is None:
-                    print("here")
-                for sent in doc:
-                    for word in sent:
-                        yield word
+            for sent in data.raw:
+                for word in sent:
+                    yield word
 
     @staticmethod
     def build_vocab(data, vocabulary_size):
@@ -152,12 +158,20 @@ class DataHelper(object):
         vocabulary = {x: i for i, x in enumerate(vocabulary_inv)}
         return [vocabulary, vocabulary_inv]
 
+    @staticmethod
+    def to_onehot(label_vector, total_class):
+        y_onehot = np.zeros((len(label_vector), total_class))
+        y_onehot[np.arange(len(label_vector)), label_vector.astype(int)] = 1
+        return y_onehot
+
+
     def build_content_vector(self, data):
         unk = self.vocab["<UNK>"]
-        content_vector = np.array([[[self.vocab.get(word, unk) for word in sent] for sent in doc] for doc in data.raw])
+        content_vector = np.array([[self.vocab.get(word, unk) for word in sent] for sent in data.raw])
         data.value = content_vector
         return data
 
+    @staticmethod
     def batch_iter(data, batch_size, num_epochs, shuffle=True):
         """
         Generates a batch iterator for a dataset.

@@ -2,6 +2,8 @@ import numpy as np
 import re
 import itertools
 import pickle
+import logging
+import pkg_resources
 
 from data_helpers.DataHelpers import DataHelper
 from data_helpers.Data import DataObject
@@ -9,15 +11,26 @@ from data_helpers.Data import DataObject
 
 class DataHelperHotelOne(DataHelper):
 
-    def __init(self, embed_dim, target_doc_len, target_sent_len, aspect_id):
+    problem_name = "TripAdvisor"
+
+    sent_num_file = ["aspect_0.count", "test_aspect_0.count"]
+    rating_file = ["aspect_0.rating", "test_aspect_0.rating"]
+    content_file = ["aspect_0.txt", "test_aspect_0.txt"]
+
+    def __init__(self, embed_dim, target_doc_len, target_sent_len, aspect_id, doc_as_sent=False):
         super(DataHelperHotelOne, self).__init__(embed_dim=embed_dim, target_doc_len=target_doc_len,
                                                  target_sent_len=target_sent_len)
 
+        logging.info("setting: %s is %s", "aspect_id", aspect_id)
         self.aspect_id = aspect_id
+        logging.info("setting: %s is %s", "doc_as_sent", doc_as_sent)
+        self.doc_as_sent = doc_as_sent
 
-        self.load_train_data()
+        self.data_file_dir = './data/hotel_balance_LengthFix1_3000per/'
 
-    def load_data_and_labels(self):
+        self.load_all_data()
+
+    def load_files(self, load_test):
         """
         Loads MR polarity data from files, splits the data into words and generates labels.
         Returns split sentences and labels.
@@ -25,108 +38,39 @@ class DataHelperHotelOne(DataHelper):
         aspect_id should be 0 1 2 3 4 5
         """
 
-        # Load data from files
-        identity = [[1, 0, 0, 0, 0],
-                    [0, 1, 0, 0, 0],
-                    [0, 0, 1, 0, 0],
-                    [0, 0, 0, 1, 0],
-                    [0, 0, 0, 0, 1]]
+        sent_count = list(open(self.data_file_dir + self.sent_num_file[load_test], "r").readlines())
+        sent_count = [int(s) for s in sent_count if (len(s) > 0 and s != "\n")]
 
-        train_count = list(open("./data/BalanceByAspect0_LengthFix1_3000perRate_Review/aspect_0.count", "r").readlines())
-        train_count = [int(s) for s in train_count if (len(s) > 0 and s != "\n")]
+        aspect_rating = list(open(self.data_file_dir + self.rating_file[load_test], "r").readlines())
+        aspect_rating = [s for s in aspect_rating if (len(s) > 0 and s != "\n")]
+        y = [s.split(" ")[self.aspect_id] for s in aspect_rating]
+        y = np.array(list(map(float, y))) - 1
+        y_onehot = self.to_onehot(y, 5)
 
-        train_rating = list(open("./data/BalanceByAspect0_LengthFix1_3000perRate_Review/aspect_0.rating", "r").readlines())
-        train_rating = [s for s in train_rating if (len(s) > 0 and s != "\n")]
-        y = [identity[int(s.split(" ")[self.aspect_id]) - 1] for s in train_rating]
-
-        train_content = list(open("./data/BalanceByAspect0_LengthFix1_3000perRate_Review/aspect_0.txt", "r").readlines())
+        train_content = list(open(self.data_file_dir + self.content_file[load_test], "r").readlines())
         train_content = [s.strip() for s in train_content]
         # Split by words
         x_text = [self.clean_str(sent) for sent in train_content]
+
+        if self.doc_as_sent:
+            x_text = DataHelperHotelOne.concat_to_doc(sent_list=x_text, sent_count=sent_count)
 
         # review_lens = []
         x = []
         for train_line_index in range(len(x_text)):
             tokens = x_text[train_line_index].split()
-
-            if len(tokens) > 5120:
-                # print str(len(tokens)) + "\t" + x_text[train_line_index]
-                x_text[train_line_index] = x_text[train_line_index].replace("\?", "")
-                x_text[train_line_index] = x_text[train_line_index].replace("(", "")
-                x_text[train_line_index] = x_text[train_line_index].replace(")", "")
-                x_text[train_line_index] = re.sub(r'[0-9]', '', x_text[train_line_index])
-
-                tokens = x_text[train_line_index].split()
-
-                if len(tokens) > 6700:
-                    tokens = tokens[:6700]
-                    # print "\t### Force Cut"
-                    # print "\t" + str(len(tokens)) + "\t" + x_text[train_line_index]
             x.append(tokens)
 
-        data = DataObject("NAME", len(y))
+        data = DataObject(self.problem_name, len(y))
         data.raw = x
-        data.label_doc = y
+        data.label_doc = y_onehot
+        data.doc_size = sent_count
 
         return data
 
-    def load_test_data_and_labels(self, aspect_id):
-        """
-        Loads MR polarity data from files, splits the data into words and generates labels.
-        Returns split sentences and labels.
-        """
-        # Load data from files
-        identity = [[1, 0, 0, 0, 0],
-                    [0, 1, 0, 0, 0],
-                    [0, 0, 1, 0, 0],
-                    [0, 0, 0, 1, 0],
-                    [0, 0, 0, 0, 1]]
-
-        train_count = list(
-            open("./data/BalanceByAspect0_LengthFix1_3000perRate_Review/test_aspect_0.count", "r").readlines())
-        train_count = [int(s) for s in train_count if (len(s) > 0 and s != "\n")]
-
-        train_rating = list(
-            open("./data/BalanceByAspect0_LengthFix1_3000perRate_Review/test_aspect_0.rating", "r").readlines())
-        train_rating = [s for s in train_rating if (len(s) > 0 and s != "\n")]
-        y = [identity[int(s.split(" ")[aspect_id]) - 1] for s in train_rating]
-
-        train_content = list(
-            open("./data/BalanceByAspect0_LengthFix1_3000perRate_Review/test_aspect_0.txt", "r").readlines())
-        train_content = [s.strip() for s in train_content]
-        # Split by words
-        x_text = [self.clean_str(sent) for sent in train_content]
-
-        # review_lens = []
-        x = []
-        for train_line_index in range(len(x_text)):
-            tokens = x_text[train_line_index].split()
-
-            if len(tokens) > 5120:
-                # print str(len(tokens)) + "\t" + x_text[train_line_index]
-                x_text[train_line_index] = x_text[train_line_index].replace("\?", "")
-                x_text[train_line_index] = x_text[train_line_index].replace("(", "")
-                x_text[train_line_index] = x_text[train_line_index].replace(")", "")
-                x_text[train_line_index] = re.sub(r'[0-9]', '', x_text[train_line_index])
-
-                tokens = x_text[train_line_index].split()
-
-                if len(tokens) > 6700:
-                    tokens = tokens[:6700]
-                    # print "\t### Force Cut"
-                    # print "\t" + str(len(tokens)) + "\t" + x_text[train_line_index]
-            x.append(tokens)
-
-        return [x, y]
-
-    def load_train_data(self):
-        """
-        Loads and preprocessed data for the MR dataset.
-        Returns input vectors, labels, vocabulary, and inverse vocabulary.
-        """
-        # Load and preprocess data
-        train_data = self.load_data_and_labels()
-        self.vocab, self.vocab_inv = self.build_vocab(train_data)
+    def load_all_data(self):
+        train_data = self.load_files(0)
+        self.vocab, self.vocab_inv = self.build_vocab([train_data], self.vocabulary_size)
         self.embed_matrix = self.build_glove_embedding(self.vocab_inv)
         train_data = self.build_content_vector(train_data)
         train_data = self.pad_sentences(train_data)
@@ -135,20 +79,17 @@ class DataHelperHotelOne(DataHelper):
         self.train_data.embed_matrix = self.embed_matrix
         self.train_data.vocab = self.vocab
         self.train_data.vocab_inv = self.vocab_inv
+        self.train_data.label_instance = self.train_data.label_doc
 
-    def load_test_data(aspect_id):
-        """
-        Loads and preprocessed data for the MR dataset.
-        Returns input vectors, labels, vocabulary, and inverse vocabulary.
-        """
-        # Load and preprocess data
-        reviews, labels = load_test_data_and_labels(aspect_id=aspect_id)
-        reviews_padded, labels = pad_sentences(reviews=reviews, y=labels, target_length=2312)
-        # vocabulary, vocabulary_inv = build_vocab(sentences_padded)
-        vocabulary, vocabulary_inv = pickle.load(open("vocabulary.pickle", "rb"))
-        x, y = build_input_data(reviews_padded, labels, vocabulary)
-        return [x, y, vocabulary, vocabulary_inv]
+        test_data = self.load_files(1)
+        test_data = self.build_content_vector(test_data)
+        test_data = self.pad_sentences(test_data)
 
+        self.test_data = test_data
+        self.test_data.embed_matrix = self.embed_matrix
+        self.test_data.vocab = self.vocab
+        self.test_data.vocab_inv = self.vocab_inv
+        self.test_data.label_instance = self.test_data.label_doc
 
 if __name__ == "__main__":
-    a = DataHelperHotelOne()
+    a = DataHelperHotelOne(embed_dim=300, target_doc_len=200, target_sent_len=1024, aspect_id=1, doc_as_sent=True)
