@@ -7,7 +7,7 @@ import logging
 
 from data_helpers.DataHelpers import DataHelper
 import utils.ArchiveManager as AM
-from data_helpers import data_helpers_oneAspect_glove
+from data_helpers.data_helpers_oneAspect_glove import DataHelperHotelOne
 
 
 class EvaluatorOrigin:
@@ -80,13 +80,23 @@ class EvaluatorOrigin:
 
         # Print accuracy
         # np.savetxt('temp.out', all_predictions, fmt='%1.0f')
-        correct_predictions = float(sum(all_predictions == self.test_data.label_instance))
+        index_label = np.argmax(self.test_data.label_instance, axis=1)
+        correct_predictions = float(sum(all_predictions == index_label))
         # all_predictions = np.array(all_predictions)
         # average_accuracy = all_predictions.sum(axis=0) / float(all_predictions.shape[0])
-        average_accuracy = correct_predictions / float(all_predictions.shape[0])
+        average_accuracy = correct_predictions / len(all_predictions)
         print(("Total number of test examples: {}".format(len(self.test_data.label_instance))))
         print(("\t" + str(average_accuracy)))
 
-        mse = np.mean((all_predictions - self.test_data.label_instance) ** 2)
+        mse = np.mean((all_predictions - index_label) ** 2)
         print(("MSE\t" + str(mse)))
         # print("Accuracy: {:g}".format(average_accuracy / float(len(y_test))))
+
+
+if __name__ == "__main__":
+    dater = DataHelperHotelOne(embed_dim=300, target_sent_len=1024, target_doc_len=None,
+                               aspect_id=1, doc_as_sent=True)
+    ev = EvaluatorOrigin(dater=dater)
+
+    ev.evaluate(experiment_dir="C:\\Users\\aeryen\\Desktop\\MASA_CNN\\runs\\TripAdvisor_Origin\\170731_1501493057",
+                checkpoint_step=4000)
