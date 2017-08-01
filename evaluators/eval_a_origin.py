@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 
 import numpy as np
+from sklearn.metrics import mean_squared_error
 import tensorflow as tf
 import os
 import logging
@@ -38,15 +39,10 @@ class EvaluatorOrigin:
         EvaluatorOrigin.get_exp_logger(exp_dir=experiment_dir, checkpoing_file_name=file_name)
 
         logging.info("Evaluating: " + __file__)
-        self.eval_log.write("Evaluating: " + __file__ + "\n")
         logging.info("Test for prob: " + self.dater.problem_name)
-        self.eval_log.write("Test for prob: " + self.dater.problem_name + "\n")
         logging.info(checkpoint_file)
-        self.eval_log.write(checkpoint_file + "\n")
         logging.info(AM.get_time())
-        self.eval_log.write(AM.get_time() + "\n")
         logging.info("Total number of test examples: {}".format(len(self.test_data.label_instance)))
-        self.eval_log.write("Total number of test examples: {}\n".format(len(self.test_data.label_instance)))
 
         graph = tf.Graph()
         with graph.as_default():
@@ -85,11 +81,11 @@ class EvaluatorOrigin:
         # all_predictions = np.array(all_predictions)
         # average_accuracy = all_predictions.sum(axis=0) / float(all_predictions.shape[0])
         average_accuracy = correct_predictions / len(all_predictions)
-        print(("Total number of test examples: {}".format(len(self.test_data.label_instance))))
-        print(("\t" + str(average_accuracy)))
+        logging.info("Total number of test examples: {}".format(len(self.test_data.label_instance)))
+        logging.info("\t" + str(average_accuracy))
 
-        mse = np.mean((all_predictions - index_label) ** 2)
-        print(("MSE\t" + str(mse)))
+        mse = mean_squared_error(y_true=index_label, y_pred=all_predictions)
+        logging.info(("MSE\t" + str(mse)))
         # print("Accuracy: {:g}".format(average_accuracy / float(len(y_test))))
 
 
