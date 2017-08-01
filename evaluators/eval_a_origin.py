@@ -16,13 +16,26 @@ class EvaluatorOrigin:
         self.test_data = self.dater.get_test_data()
         self.eval_log = None
 
+    @staticmethod
+    def get_exp_logger(exp_dir, checkpoing_file_name):
+        log_path = exp_dir + checkpoing_file_name + "_eval.log"
+        # logging facility, log both into file and console
+        logging.basicConfig(level=logging.DEBUG,
+                            format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
+                            datefmt='%m-%d %H:%M',
+                            filename=log_path,
+                            filemode='w+')
+        console_logger = logging.StreamHandler()
+        logging.getLogger('').addHandler(console_logger)
+        logging.info("log created: " + log_path)
+
     def evaluate(self, experiment_dir, checkpoint_step, doc_acc=True, do_is_training=True):
         if checkpoint_step is not None:
             checkpoint_file = experiment_dir + "/checkpoints/" + "model-" + str(checkpoint_step)
         else:
             checkpoint_file = tf.train.latest_checkpoint(experiment_dir + "/checkpoints/", latest_filename=None)
         file_name = os.path.basename(checkpoint_file)
-        self.eval_log = open(os.path.join(experiment_dir, file_name + "_eval.log"), mode="w+")
+        EvaluatorOrigin.get_exp_logger(exp_dir=experiment_dir, checkpoing_file_name=file_name)
 
         logging.info("Evaluating: " + __file__)
         self.eval_log.write("Evaluating: " + __file__ + "\n")
