@@ -1,9 +1,5 @@
 import numpy as np
-import re
-import itertools
-import pickle
 import logging
-import pkg_resources
 
 from data_helpers.DataHelpers import DataHelper
 from data_helpers.Data import DataObject
@@ -44,9 +40,15 @@ class DataHelperHotelOne(DataHelper):
 
         aspect_rating = list(open(self.dataset_dir + self.rating_file[load_test], "r").readlines())
         aspect_rating = [s for s in aspect_rating if (len(s) > 0 and s != "\n")]
-        y = [s.split(" ")[self.aspect_id] for s in aspect_rating]
-        y = np.array(list(map(float, y))) - 1
-        y_onehot = self.to_onehot(y, 5)
+        if self.aspect_id is None:
+            y = [s.split(" ") for s in aspect_rating]
+            y = np.array(y)[:, 0:-1]
+            y = y.astype(np.int) - 1
+            y_onehot = self.to_onehot_3d(y, self.num_of_classes)
+        else:
+            y = [s.split(" ")[self.aspect_id] for s in aspect_rating]
+            y = np.array(list(map(float, y)), dtype=np.int) - 1
+            y_onehot = self.to_onehot(y, self.num_of_classes)
 
         train_content = list(open(self.dataset_dir + self.content_file[load_test], "r").readlines())
         train_content = [s.strip() for s in train_content]
@@ -93,4 +95,4 @@ class DataHelperHotelOne(DataHelper):
         self.test_data.label_instance = self.test_data.label_doc
 
 if __name__ == "__main__":
-    a = DataHelperHotelOne(embed_dim=300, target_doc_len=200, target_sent_len=1024, aspect_id=1, doc_as_sent=True)
+    a = DataHelperHotelOne(embed_dim=300, target_doc_len=200, target_sent_len=1024, aspect_id=None, doc_as_sent=True)

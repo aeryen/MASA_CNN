@@ -1,7 +1,6 @@
 import logging
 import os
 import datetime
-import time
 import tensorflow as tf
 from networks.NetworkBuilder import NetworkBuilder
 from data_helpers.DataHelpers import DataHelper

@@ -2,8 +2,7 @@ import numpy as np
 import re
 import logging
 import pickle
-import itertools
-import pkg_resources
+from sklearn.preprocessing import OneHotEncoder
 import os
 from collections import Counter
 
@@ -166,6 +165,16 @@ class DataHelper(object):
     def to_onehot(label_vector, total_class):
         y_onehot = np.zeros((len(label_vector), total_class))
         y_onehot[np.arange(len(label_vector)), label_vector.astype(int)] = 1
+        return y_onehot
+
+    @staticmethod
+    def to_onehot_3d(label_vector, total_class):
+        label_vector .astype(np.int)
+        y_onehot = np.zeros((len(label_vector), len(label_vector[0]), total_class))
+        for instance_index in range(len(label_vector)):
+            for aspect_index in range(len(label_vector[0])):
+                y_onehot[instance_index][aspect_index][label_vector[instance_index][aspect_index]] = 1
+
         return y_onehot
 
     def build_content_vector(self, data):

@@ -1,5 +1,5 @@
-from networks.input_components.OneChannel import OneChannel
-from networks.middle_components.origin import OriginCNN
+from networks.input_components.OneSequence import OneSequence
+from networks.middle_components.OriginCNN import OriginCNN
 from networks.output_components.trip_advisor_output import TripAdvisorOutput
 
 
@@ -19,8 +19,8 @@ class NetworkBuilder:
 
         # input component
         if input_component.endswith("TripAdvisor"):
-            self.input_comp = OneChannel(sequence_length, num_classes, word_vocab_size, embedding_size,
-                                         data.embed_matrix)
+            self.input_comp = OneSequence(sequence_length, num_classes, word_vocab_size, embedding_size,
+                                          data.embed_matrix)
         else:
             raise NotImplementedError
 
