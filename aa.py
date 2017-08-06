@@ -3,7 +3,7 @@ import logging
 
 from utils.ArchiveManager import ArchiveManager
 
-from data_helpers.data_helpers_oneAspect_glove import DataHelperHotelOne
+from data_helpers.DataHelperHotelOne import DataHelperHotelOne
 from evaluators.eval_a_origin import EvaluatorOrigin
 from trainers.TrainTask import TrainTask
 

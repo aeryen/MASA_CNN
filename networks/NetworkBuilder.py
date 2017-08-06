@@ -1,5 +1,7 @@
 from networks.input_components.OneSequence import OneSequence
-from networks.middle_components.OriginCNN import OriginCNN
+from networks.input_components.OneDocSequence import OneDocSequence
+from networks.middle_components.SentenceCNN import SentenceCNN
+from networks.middle_components.DocumentCNN import DocumentCNN
 from networks.output_components.trip_advisor_output import TripAdvisorOutput
 
 
@@ -11,16 +13,22 @@ class NetworkBuilder:
     """
 
     def __init__(
-            self, data, document_length, sequence_length, num_classes, embedding_size, filter_size_lists, num_filters,
+            self, data, document_length, sequence_length, num_aspects, num_classes,
+            embedding_size, filter_size_lists, num_filters,
             input_component, middle_component,
             l2_reg_lambda, dropout, batch_normalize, elu, fc):
 
-        word_vocab_size = len(data.vocab)
+        vocab_size = len(data.vocab)
 
         # input component
-        if input_component.endswith("TripAdvisor"):
-            self.input_comp = OneSequence(sequence_length, num_classes, word_vocab_size, embedding_size,
+        if input_component == "TripAdvisor":
+            self.input_comp = OneSequence(sequence_length, num_classes, vocab_size, embedding_size,
                                           data.embed_matrix)
+        if input_component == "TripAdvisor_Sent":
+            self.input_comp = OneDocSequence(document_length=document_length, sequence_length=sequence_length,
+                                             num_aspects=num_aspects, num_classes=num_classes,
+                                             vocab_size=vocab_size, embedding_size=embedding_size,
+                                             init_embedding=data.embed_matrix)
         else:
             raise NotImplementedError
 
@@ -30,11 +38,18 @@ class NetworkBuilder:
 
         # middle component
         if middle_component == 'Origin':
-            self.middle_comp = OriginCNN(previous_component=self.input_comp,
-                                         sequence_length=sequence_length, embedding_size=embedding_size,
-                                         filter_size_lists=filter_size_lists, num_filters=num_filters,
-                                         dropout=dropout, batch_normalize=batch_normalize, elu=elu,
-                                         fc=fc, l2_reg_lambda=l2_reg_lambda)
+            self.middle_comp = SentenceCNN(previous_component=self.input_comp,
+                                           sequence_length=sequence_length, embedding_size=embedding_size,
+                                           filter_size_lists=filter_size_lists, num_filters=num_filters,
+                                           dropout=dropout, batch_normalize=batch_normalize, elu=elu,
+                                           fc=fc, l2_reg_lambda=l2_reg_lambda)
+        if middle_component == "SimpleCNN":
+            self.middle_comp = DocumentCNN(previous_component=self.input_comp,
+                                           document_length=document_length, sequence_length=sequence_length,
+                                           embedding_size=embedding_size,
+                                           filter_size_lists=filter_size_lists, num_filters=num_filters,
+                                           dropout=dropout, batch_normalize=batch_normalize, elu=elu,
+                                           fc=fc, l2_reg_lambda=l2_reg_lambda)
         else:
             raise NotImplementedError
 

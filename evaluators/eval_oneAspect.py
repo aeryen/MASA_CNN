@@ -3,7 +3,7 @@
 import numpy as np
 import tensorflow as tf
 
-from data_helpers import data_helpers_allAspect_glove
+from data_helpers import DataHelperHotelAll
 
 # Parameters
 # ==================================================
@@ -30,7 +30,7 @@ print("")
 
 # Load data. Load your own data here
 print("Loading data...")
-x, y, vocabulary, vocabulary_inv, s_count = data_helpers_allAspect_glove.load_test_data()
+x, y, vocabulary, vocabulary_inv, s_count = DataHelperHotelAll.load_test_data()
 y_overall = y[:, 2, :]
 # y_test = np.argmax(y_test, axis=1)
 print(("Vocabulary size: {:d}".format(len(vocabulary))))
@@ -68,8 +68,8 @@ with graph.as_default():
         all_rating = graph.get_operation_by_name("output/overall_value").outputs[0]
 
         # Generate batches for one epoch
-        x_batches = data_helpers_allAspect_glove.batch_iter(x, FLAGS.batch_size, 1, shuffle=False)
-        y_batches_all = data_helpers_allAspect_glove.batch_iter(y_overall, FLAGS.batch_size, 1, shuffle=False)
+        x_batches = DataHelperHotelAll.batch_iter(x, FLAGS.batch_size, 1, shuffle=False)
+        y_batches_all = DataHelperHotelAll.batch_iter(y_overall, FLAGS.batch_size, 1, shuffle=False)
 
         # Collect the predictions here
         all_prediction = []

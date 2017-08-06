@@ -4,7 +4,7 @@ import numpy as np
 import tensorflow as tf
 
 import data_helpers
-from data_helpers import data_helpers_allAspect_glove
+from data_helpers import DataHelperHotelAll
 
 # Parameters
 # ==================================================
@@ -31,7 +31,7 @@ print("")
 
 # Load data. Load your own data here
 print("Loading data...")
-x_test, y_test, vocabulary, vocabulary_inv, s_count = data_helpers_allAspect_glove.load_test_data()
+x_test, y_test, vocabulary, vocabulary_inv, s_count = DataHelperHotelAll.load_test_data()
 # y_test = np.argmax(y_test, axis=1)
 print(("Vocabulary size: {:d}".format(len(vocabulary))))
 print(("Test set size {:d}".format(len(y_test))))
