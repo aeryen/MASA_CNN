@@ -32,10 +32,14 @@ if __name__ == "__main__":
     # Middle Components:
     #
     # * Origin
+    #
+    #
+    #
     ################################################
 
-    input_component = "TripAdvisor"
-    middle_component = "Origin"
+    input_component = "TripAdvisorDoc"
+    middle_component = "SimpleCNN"
+    output_component = "LSAA"
 
     am = ArchiveManager(input_component, middle_component)
     get_exp_logger(am)
@@ -46,10 +50,16 @@ if __name__ == "__main__":
         dater = DataHelperHotelOne(embed_dim=300, target_sent_len=1024, target_doc_len=None,
                                    aspect_id=1, doc_as_sent=True)
         ev = EvaluatorOrigin(dater=dater)
+    elif input_component == "TripAdvisorDoc":
+        dater = DataHelperHotelOne(embed_dim=300, target_doc_len=64, target_sent_len=1024,
+                                   aspect_id=None, doc_as_sent=False, doc_level=True)
+        ev = EvaluatorOrigin(dater=dater)
     else:
         raise NotImplementedError
 
-    tt = TrainTask(data_helper=dater, am=am, input_component=input_component, middle_component=middle_component,
+    tt = TrainTask(data_helper=dater, am=am,
+                   input_component=input_component, middle_component=middle_component,
+                   output_component=output_component,
                    batch_size=32, evaluate_every=500, checkpoint_every=5000, max_to_keep=6,
                    restore_path=None)
 

@@ -16,11 +16,12 @@ class TrainTask:
     Currently it only- works with ML data, i'll expand this to be more flexible in the near future.
     """
 
-    def __init__(self, data_helper, am, input_component, middle_component, batch_size,
+    def __init__(self, data_helper, am, input_component, middle_component, output_component, batch_size,
                  evaluate_every, checkpoint_every, max_to_keep, restore_path=None):
         self.data_hlp = data_helper
         self.input_component = input_component
         self.middle_component = middle_component
+        self.output_component = output_component
         self.am = am
 
         logging.warning('TrainTask instance initiated: ' + AM.get_date())
@@ -108,10 +109,12 @@ class TrainTask:
                     data=self.train_data,
                     document_length=self.data_hlp.target_doc_len,
                     sequence_length=self.data_hlp.target_sent_len,
-                    num_classes=self.data_hlp.num_of_classes,  # Number of classification classes
+                    num_aspects=self.data_hlp.num_aspects,
+                    num_classes=self.data_hlp.num_classes,  # Number of classification classes
                     embedding_size=self.data_hlp.embedding_dim,
                     input_component=self.input_component,
                     middle_component=self.middle_component,
+                    output_component=self.output_component,
                     filter_size_lists=filter_sizes,
                     num_filters=num_filters,
                     l2_reg_lambda=l2_lambda,

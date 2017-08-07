@@ -15,7 +15,7 @@ class DataHelper(object):
         assert embed_dim is not None
         assert target_sent_len is not None
 
-        self.num_of_classes = None
+        self.num_classes = None
 
         self.embedding_dim = embed_dim
         self.target_doc_len = target_doc_len

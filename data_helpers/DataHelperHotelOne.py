@@ -25,7 +25,8 @@ class DataHelperHotelOne(DataHelper):
         self.doc_level = doc_level
 
         self.dataset_dir = self.data_path + 'hotel_balance_LengthFix1_3000per/'
-        self.num_of_classes = 5
+        self.num_classes = 5
+        self.num_aspects = 5
 
         self.load_all_data()
 
@@ -46,11 +47,11 @@ class DataHelperHotelOne(DataHelper):
             y = [s.split(" ") for s in aspect_rating]
             y = np.array(y)[:, 0:-1]
             y = y.astype(np.int) - 1
-            y_onehot = self.to_onehot_3d(y, self.num_of_classes)
+            y_onehot = self.to_onehot_3d(y, self.num_classes)
         else:
             y = [s.split(" ")[self.aspect_id] for s in aspect_rating]
             y = np.array(list(map(float, y)), dtype=np.int) - 1
-            y_onehot = self.to_onehot(y, self.num_of_classes)
+            y_onehot = self.to_onehot(y, self.num_classes)
 
         train_content = list(open(self.dataset_dir + self.content_file[load_test], "r").readlines())
         train_content = [s.strip() for s in train_content]
