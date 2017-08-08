@@ -2,8 +2,7 @@ import numpy as np
 import re
 import logging
 import pickle
-import itertools
-import pkg_resources
+from sklearn.preprocessing import OneHotEncoder
 import os
 from collections import Counter
 
@@ -16,7 +15,7 @@ class DataHelper(object):
         assert embed_dim is not None
         assert target_sent_len is not None
 
-        self.num_of_classes = None
+        self.num_classes = None
 
         self.embedding_dim = embed_dim
         self.target_doc_len = target_doc_len
@@ -130,6 +129,36 @@ class DataHelper(object):
         return data
 
     @staticmethod
+    def pad_document(data, target_length=-1):
+        docs = data.value
+        lens = data.doc_size
+        if target_length > 0:
+            tar_length = target_length
+        else:
+            tar_length = max(lens)
+            print("longest doc: " + str(tar_length))
+
+        padded_doc = []
+        trim_len = []
+        sent_length = len(docs[0][0])
+        for i in range(len(docs)):
+            d = docs[i]
+            if len(d) <= tar_length:
+                num_padding = tar_length - len(d)
+                if len(d) > 0:
+                    new_doc = np.concatenate([d, np.zeros([num_padding, sent_length], dtype=np.int)])
+                    trim_len.append(lens[i])
+                else:
+                    raise ValueError("Warning, 0 line file!")
+            else:
+                new_doc = d[:tar_length]
+                trim_len.append(tar_length)
+            padded_doc.append(new_doc)
+        data.value = np.array(padded_doc)
+        data.doc_size_trim = np.array(trim_len)
+        return data
+
+    @staticmethod
     def concat_to_doc(sent_list, sent_count):
         start_index = 0
         docs = []
@@ -166,6 +195,16 @@ class DataHelper(object):
     def to_onehot(label_vector, total_class):
         y_onehot = np.zeros((len(label_vector), total_class))
         y_onehot[np.arange(len(label_vector)), label_vector.astype(int)] = 1
+        return y_onehot
+
+    @staticmethod
+    def to_onehot_3d(label_vector, total_class):
+        label_vector .astype(np.int)
+        y_onehot = np.zeros((len(label_vector), len(label_vector[0]), total_class))
+        for instance_index in range(len(label_vector)):
+            for aspect_index in range(len(label_vector[0])):
+                y_onehot[instance_index][aspect_index][label_vector[instance_index][aspect_index]] = 1
+
         return y_onehot
 
     def build_content_vector(self, data):

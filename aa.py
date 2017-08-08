@@ -3,7 +3,7 @@ import logging
 
 from utils.ArchiveManager import ArchiveManager
 
-from data_helpers.data_helpers_oneAspect_glove import DataHelperHotelOne
+from data_helpers.DataHelperHotelOne import DataHelperHotelOne
 from evaluators.eval_a_origin import EvaluatorOrigin
 from trainers.TrainTask import TrainTask
 
@@ -32,10 +32,14 @@ if __name__ == "__main__":
     # Middle Components:
     #
     # * Origin
+    #
+    #
+    #
     ################################################
 
-    input_component = "TripAdvisor"
-    middle_component = "Origin"
+    input_component = "TripAdvisorDoc"
+    middle_component = "DocumentCNN"
+    output_component = "LSAA"
 
     am = ArchiveManager(input_component, middle_component)
     get_exp_logger(am)
@@ -43,13 +47,19 @@ if __name__ == "__main__":
     logging.debug("Loading data...")
 
     if input_component == "TripAdvisor":
-        dater = DataHelperHotelOne(embed_dim=300, target_sent_len=1024, target_doc_len=None,
+        dater = DataHelperHotelOne(embed_dim=300, target_sent_len=512, target_doc_len=None,
                                    aspect_id=1, doc_as_sent=True)
+        ev = EvaluatorOrigin(dater=dater)
+    elif input_component == "TripAdvisorDoc":
+        dater = DataHelperHotelOne(embed_dim=300, target_doc_len=64, target_sent_len=512,
+                                   aspect_id=None, doc_as_sent=False, doc_level=True)
         ev = EvaluatorOrigin(dater=dater)
     else:
         raise NotImplementedError
 
-    tt = TrainTask(data_helper=dater, am=am, input_component=input_component, middle_component=middle_component,
+    tt = TrainTask(data_helper=dater, am=am,
+                   input_component=input_component, middle_component=middle_component,
+                   output_component=output_component,
                    batch_size=32, evaluate_every=500, checkpoint_every=5000, max_to_keep=6,
                    restore_path=None)
 

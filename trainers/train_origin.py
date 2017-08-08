@@ -7,7 +7,7 @@ import time
 import numpy as np
 import tensorflow as tf
 
-from data_helpers import data_helpers_oneAspect_glove
+from data_helpers import DataHelperHotelOne
 from networks.cnn_a_origin import TextCNN
 
 # Parameters
@@ -43,7 +43,7 @@ print("")
 
 # Load data
 print("Loading data...")
-x, y, vocabulary, vocabulary_inv, embed_matrix = data_helpers_oneAspect_glove.load_data(5)
+x, y, vocabulary, vocabulary_inv, embed_matrix = DataHelperHotelOne.load_data(5)
 # Randomly shuffle data
 np.random.seed(10)
 shuffle_indices = np.random.permutation(np.arange(len(y)))
@@ -164,7 +164,7 @@ with tf.Graph().as_default():
 
 
         # Generate batches
-        batches = data_helpers_oneAspect_glove.batch_iter(
+        batches = DataHelperHotelOne.batch_iter(
             list(zip(x_train, y_train)), FLAGS.batch_size, FLAGS.num_epochs)
         # Training loop. For each batch...
         for batch in batches:
@@ -173,7 +173,7 @@ with tf.Graph().as_default():
             current_step = tf.train.global_step(sess, global_step)
             if current_step % FLAGS.evaluate_every == 0:
                 print("\nEvaluation:")
-                dev_batches = data_helpers_oneAspect_glove.batch_iter(list(zip(x_dev, y_dev)), 100, 1)
+                dev_batches = DataHelperHotelOne.batch_iter(list(zip(x_dev, y_dev)), 100, 1)
                 for dev_batch in dev_batches:
                     if len(dev_batch) > 0:
                         small_dev_x, small_dev_y = list(zip(*dev_batch))

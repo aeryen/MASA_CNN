@@ -1,7 +1,6 @@
 import logging
 import os
 import datetime
-import time
 import tensorflow as tf
 from networks.NetworkBuilder import NetworkBuilder
 from data_helpers.DataHelpers import DataHelper
@@ -17,11 +16,12 @@ class TrainTask:
     Currently it only- works with ML data, i'll expand this to be more flexible in the near future.
     """
 
-    def __init__(self, data_helper, am, input_component, middle_component, batch_size,
+    def __init__(self, data_helper, am, input_component, middle_component, output_component, batch_size,
                  evaluate_every, checkpoint_every, max_to_keep, restore_path=None):
         self.data_hlp = data_helper
         self.input_component = input_component
         self.middle_component = middle_component
+        self.output_component = output_component
         self.am = am
 
         logging.warning('TrainTask instance initiated: ' + AM.get_date())
@@ -56,7 +56,7 @@ class TrainTask:
         logging.info("Train/Dev split (IST): {:d}/{:d}".
                      format(len(self.train_data.label_instance), len(self.test_data.label_instance)))
 
-    def generates_all_summary(self, grads_and_vars, graph_loss, graph_acc, graph):
+    def generates_all_summary(self, grads_and_vars, graph_loss, graph_acc, graph_asp_acc, graph):
         # Keep track of gradient values and sparsity (optional)
         with tf.name_scope('grad_summary'):
             grad_summaries = []
@@ -75,6 +75,14 @@ class TrainTask:
         # Summaries for loss and accuracy
         loss_summary = tf.summary.scalar("loss", graph_loss)
         acc_summary = tf.summary.scalar("accuracy", graph_acc)
+
+        if graph_asp_acc is not None:
+            asp_acc_summary = []
+            with tf.name_scope("aspect_acc"):
+                for i, asp_acc in enumerate(graph_asp_acc):
+                    asp_acc_summary.append(tf.summary.scalar("accuracy_asp_" + str(i), asp_acc))
+            asp_acc_summary = tf.summary.merge(asp_acc_summary)
+            acc_summary = tf.summary.merge([acc_summary, asp_acc_summary])
 
         # Train Summaries
         with tf.name_scope('train_summary'):
@@ -109,10 +117,12 @@ class TrainTask:
                     data=self.train_data,
                     document_length=self.data_hlp.target_doc_len,
                     sequence_length=self.data_hlp.target_sent_len,
-                    num_classes=self.data_hlp.num_of_classes,  # Number of classification classes
+                    num_aspects=self.data_hlp.num_aspects,
+                    num_classes=self.data_hlp.num_classes,  # Number of classification classes
                     embedding_size=self.data_hlp.embedding_dim,
                     input_component=self.input_component,
                     middle_component=self.middle_component,
+                    output_component=self.output_component,
                     filter_size_lists=filter_sizes,
                     num_filters=num_filters,
                     l2_reg_lambda=l2_lambda,
@@ -126,6 +136,7 @@ class TrainTask:
                 graph_input_y = cnn.input_y
                 graph_drop_keep = cnn.dropout_keep_prob
                 graph_is_train = cnn.is_training
+                aspect_accuracy = cnn.aspect_accuracy
             else:
                 saver = tf.train.import_meta_graph("{}.meta".format(self.restore_latest))
                 saver.restore(sess, self.restore_latest)
@@ -156,7 +167,7 @@ class TrainTask:
 
                 self.generates_all_summary(grads_and_vars=grads_and_vars,
                                            graph_loss=graph_loss, graph_acc=graph_accuracy,
-                                           graph=sess.graph)
+                                           graph_asp_acc=aspect_accuracy, graph=sess.graph)
 
                 # Checkpoint directory. Tensorflow assumes this directory already exists so we need to create it
                 checkpoint_dir = os.path.abspath(os.path.join(self.exp_dir, "checkpoints"))

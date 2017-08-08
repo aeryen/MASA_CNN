@@ -3,7 +3,7 @@ import logging
 
 
 class TripAdvisorOutput(object):
-    def __init__(self, input_y, prev_layer, num_classes, l2_sum, l2_reg_lambda):
+    def __init__(self, prev_layer, input_y, num_classes, l2_sum, l2_reg_lambda):
         if l2_sum is not None:
             self.l2_sum = l2_sum
             logging.warning("OPTIMIZING PROPER L2")

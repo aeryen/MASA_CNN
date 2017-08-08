@@ -8,7 +8,7 @@ import logging
 
 from data_helpers.DataHelpers import DataHelper
 import utils.ArchiveManager as AM
-from data_helpers.data_helpers_oneAspect_glove import DataHelperHotelOne
+from data_helpers.DataHelperHotelOne import DataHelperHotelOne
 
 
 class EvaluatorOrigin:

@@ -1,7 +1,7 @@
 import tensorflow as tf
 
 
-class OneChannel:
+class OneSequence:
 
     def __init__(self, sequence_length, num_classes, word_vocab_size, embedding_size, init_embedding=None):
         # Placeholders for input, output and dropout, First None is batch size.
@@ -18,4 +18,4 @@ class OneChannel:
             else:
                 W = tf.Variable(init_embedding, name="W", dtype="float32")
             self.embedded = tf.nn.embedding_lookup(W, self.input_x)
-            self.embedded_expanded = tf.expand_dims(self.embedded, -1)
+            self.last_layer = tf.expand_dims(self.embedded, -1)

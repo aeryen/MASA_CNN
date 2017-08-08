@@ -9,7 +9,7 @@ import types
 import numpy as np
 import tensorflow as tf
 
-from data_helpers import data_helpers_allAspect_glove
+from data_helpers import DataHelperHotelAll
 from networks.cnn_multiAspect_a2a_onescore import BetterCNN
 
 
@@ -150,7 +150,7 @@ def train_one_nn(x_train, x_dev, y_train, y_dev, vocabulary, embed_matrix, l2_re
                     writer.add_summary(summaries, step)
 
             # Generate batches
-            batches = data_helpers_allAspect_glove.batch_iter(
+            batches = DataHelperHotelAll.batch_iter(
                 list(zip(x_train, y_train)), FLAGS.batch_size, FLAGS.num_epochs)
             # Training loop. For each batch...
             for batch in batches:
@@ -159,7 +159,7 @@ def train_one_nn(x_train, x_dev, y_train, y_dev, vocabulary, embed_matrix, l2_re
                 current_step = tf.train.global_step(sess, global_step)
                 if current_step % FLAGS.evaluate_every == 0:
                     print("\nEvaluation:")
-                    dev_batches = data_helpers_allAspect_glove.batch_iter(list(zip(x_dev, y_dev)), 64, 1)
+                    dev_batches = DataHelperHotelAll.batch_iter(list(zip(x_dev, y_dev)), 64, 1)
                     for dev_batch in dev_batches:
                         small_dev_x, small_dev_y = list(zip(*dev_batch))
                         dev_step(small_dev_x, small_dev_y, writer=dev_summary_writer)
@@ -203,7 +203,7 @@ if __name__ == "__main__":
 
     # if not os.path.isfile("xyvocab.pickle"):
     time1 = time.time()
-    x, y, vocabulary, vocabulary_inv, s_count, embed_matrix = data_helpers_allAspect_glove.load_data()
+    x, y, vocabulary, vocabulary_inv, s_count, embed_matrix = DataHelperHotelAll.load_data()
     time2 = time.time()
     print('Load Data took ' + str((time2 - time1) * 1000.0) + ' ms')
     print('x have a size of ' + str(sys.getsizeof(x) / 1024.0) + 'kbytes')
