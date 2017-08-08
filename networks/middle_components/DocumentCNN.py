@@ -22,16 +22,16 @@ class DocumentCNN(object):
         self.l2_reg_lambda = l2_reg_lambda
         self.l2_sum = tf.constant(0.0)
 
-        self.previous_output = previous_component.embedded_expanded
+        self.previous_output = previous_component.last_layer
 
         # Create a convolution + maxpool layer for each filter size
         pooled_outputs = []
         num_filters_total = num_filters * len(filter_size_lists[0])
 
-        for i, filter_size in enumerate(filter_size_lists):
-            with tf.name_scope("conv-maxpool-%s" % filter_size):
+        for i, filter_size in enumerate(filter_size_lists[0]):
+            with tf.name_scope("conv-maxpool" + str(i)):
                 # Convolution Layer
-                filter_shape = [filter_size, embedding_size, 1, num_filters]
+                filter_shape = [1, filter_size, embedding_size, num_filters]
                 W = tf.Variable(tf.truncated_normal(filter_shape, stddev=0.1), name="W")
                 b = tf.Variable(tf.constant(0.1, shape=[num_filters]), name="b")
                 conv = tf.nn.conv2d(
@@ -43,27 +43,28 @@ class DocumentCNN(object):
                 # conv ==> [1, sequence_length - filter_size + 1, 1, 1]
                 # Apply nonlinearity
                 h = tf.nn.relu(tf.nn.bias_add(conv, b), name="relu")
+                # h = [batch_size ?, 64, 1022, num_filters]
                 # Max-pooling over the outputs
-                # [batch_size * sentence, 1, 1, num_filters]
                 pooled = tf.nn.max_pool(
                     h,
-                    ksize=[1, sequence_length - filter_size + 1, 1, 1],
+                    ksize=[1, 1, sequence_length - filter_size + 1, 1],
                     strides=[1, 1, 1, 1],
                     padding='VALID',
                     name="pool")
+                # pooled = [batch_size ?, 64, 1, num_filters]
+
                 pooled_outputs.append(pooled)
+                # [?, 64, 1, 300]
 
         # Combine all the pooled features
-
         self.h_pool = tf.concat(values=pooled_outputs, axis=3)
-        self.h_pool_flat = tf.reshape(self.h_pool, [-1, num_filters_total])
 
         # Add dropout
         with tf.name_scope("dropout-keep"):
             # [batch_size * sentence, num_filters_total]
-            self.last_layer = tf.nn.dropout(self.h_pool_flat, self.dropout, name="h_drop_sentence")
+            self.last_layer = tf.nn.dropout(self.h_pool, self.dropout, name="h_drop_sentence")
             # [batch_size, sentence * num_filters_total]
-            self.last_layer = tf.reshape(self.last_layer, [-1, document_length * num_filters_total],
+            self.last_layer = tf.reshape(self.last_layer, [-1, document_length, num_filters_total],
                                          name="h_drop_review")
 
     def get_last_layer_info(self):

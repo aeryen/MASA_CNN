@@ -38,7 +38,7 @@ if __name__ == "__main__":
     ################################################
 
     input_component = "TripAdvisorDoc"
-    middle_component = "SimpleCNN"
+    middle_component = "DocumentCNN"
     output_component = "LSAA"
 
     am = ArchiveManager(input_component, middle_component)
@@ -47,11 +47,11 @@ if __name__ == "__main__":
     logging.debug("Loading data...")
 
     if input_component == "TripAdvisor":
-        dater = DataHelperHotelOne(embed_dim=300, target_sent_len=1024, target_doc_len=None,
+        dater = DataHelperHotelOne(embed_dim=300, target_sent_len=512, target_doc_len=None,
                                    aspect_id=1, doc_as_sent=True)
         ev = EvaluatorOrigin(dater=dater)
     elif input_component == "TripAdvisorDoc":
-        dater = DataHelperHotelOne(embed_dim=300, target_doc_len=64, target_sent_len=1024,
+        dater = DataHelperHotelOne(embed_dim=300, target_doc_len=64, target_sent_len=512,
                                    aspect_id=None, doc_as_sent=False, doc_level=True)
         ev = EvaluatorOrigin(dater=dater)
     else:

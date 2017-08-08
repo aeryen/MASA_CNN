@@ -26,7 +26,7 @@ class DataHelperHotelOne(DataHelper):
 
         self.dataset_dir = self.data_path + 'hotel_balance_LengthFix1_3000per/'
         self.num_classes = 5
-        self.num_aspects = 5
+        self.num_aspects = 6
 
         self.load_all_data()
 

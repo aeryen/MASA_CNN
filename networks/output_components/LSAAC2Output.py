@@ -6,7 +6,7 @@ class LSAAOutput(object):
     def __init__(self, prev_layer, input_y, num_aspects, num_classes, document_length, l2_sum, l2_reg_lambda):
         self.input_y = input_y
         self.prev_layer = prev_layer
-        self.prev_layer_size = prev_layer.get_shape()[1].value
+        self.prev_layer_size = prev_layer.get_shape()[-1].value
         self.num_classes = num_classes
 
         if l2_sum is not None:
@@ -14,6 +14,9 @@ class LSAAOutput(object):
             logging.warning("OPTIMIZING PROPER L2")
         else:
             self.l2_sum = tf.constant(0.0)
+
+        self.prev_layer = tf.reshape(self.prev_layer, [-1, self.prev_layer_size],
+                                     name="sentence_features")
 
         # per sentence score
         self.rating_score = []
@@ -37,17 +40,17 @@ class LSAAOutput(object):
                 initializer=tf.contrib.layers.xavier_initializer())
             b = tf.Variable(tf.constant(0.1, shape=[num_aspects + 1]), name="b_r")
             self.l2_sum += tf.nn.l2_loss(W) * 0.5
-            self.attr_scores = tf.nn.xw_plus_b(self.prev_layer, W, b, name="scores_related")
+            self.attri_scores = tf.nn.xw_plus_b(self.prev_layer, W, b, name="scores_related")
             # [batch_size * sentence, num_aspects]
-            self.related_distribution = tf.nn.softmax(scores, name="softmax_related")
-            print(("self.related_distribution " + str(self.related_distribution.get_shape())))
+            self.attri_dist = tf.nn.softmax(self.attri_scores, name="softmax_related")
+            print(("self.related_distribution " + str(self.attri_dist.get_shape())))
 
         # Final (unnormalized) scores and predictions
         scaled_aspect = []
         with tf.name_scope("output"):
-            for aspect_index in range(start=1, stop=num_aspects + 1):
+            for aspect_index in range(1, num_aspects + 1):
                 # [batch_size * sentence, num_classes]
-                prob_aspect_sent = tf.tile(tf.expand_dims(self.related_distribution[:, aspect_index], -1),
+                prob_aspect_sent = tf.tile(tf.expand_dims(self.attri_dist[:, aspect_index], -1),
                                            [1, num_classes])
 
                 aspect_rating = tf.multiply(self.rating_score, prob_aspect_sent,
@@ -57,15 +60,16 @@ class LSAAOutput(object):
                 scaled_aspect.append(aspect_rating)
 
             # scaled_aspect(6 aspect, ?, 5)
-            scaled_aspect = tf.stack(scaled_aspect)
+            scaled_aspect = tf.stack(scaled_aspect, axis=1)
             print(("scaled_aspect " + str(scaled_aspect.get_shape())))
+
             # TODO VERY CAREFUL HERE
-            batch_sent_rating_aspect = tf.reshape(scaled_aspect, [num_aspects, -1, document_length, num_classes],
+            batch_sent_rating_aspect = tf.reshape(scaled_aspect, [-1, document_length, num_aspects, num_classes],
                                                   name="output_score")
             print(("batch_sent_rating_aspect " + str(batch_sent_rating_aspect.get_shape())))
 
-            # [6 aspect, review, rating]
-            self.scores = tf.reduce_sum(batch_sent_rating_aspect, 2, name="output_scores")
+            # [, review, 6 aspect, rating]
+            self.scores = tf.reduce_sum(batch_sent_rating_aspect, 1, name="output_scores")
             print(("batch_review_aspect_score " + str(self.scores.get_shape())))
 
             # [6 aspect, review]
@@ -79,8 +83,8 @@ class LSAAOutput(object):
             losses = 0.0
             for aspect_index in range(num_aspects):
                 aspect_losses = \
-                    tf.nn.softmax_cross_entropy_with_logits(self.scores[aspect_index, :, :],
-                                                            self.input_y[:, aspect_index, :],
+                    tf.nn.softmax_cross_entropy_with_logits(logits=self.scores[:, aspect_index, :],
+                                                            labels=self.input_y[:, aspect_index, :],
                                                             name="aspect_" + str(aspect_index) + "_loss")
                 losses = tf.add(losses, tf.reduce_mean(aspect_losses), name="aspect_loss_sum")
             self.loss = losses + l2_reg_lambda * self.l2_sum
@@ -90,8 +94,8 @@ class LSAAOutput(object):
             self.aspect_accuracy = []
             for aspect_index in range(num_aspects):
                 with tf.name_scope("aspect_" + str(aspect_index)):
-                    aspect_prediction = (tf.equal(self.predictions[aspect_index, :],
+                    aspect_prediction = (tf.equal(self.predictions[:, aspect_index],
                                                   tf.argmax(self.input_y[:, aspect_index, :], 1)))
-                    self.aspect_accuracy.append(tf.reduce_mean(tf.cast(tf.stack(aspect_prediction), "float"),
+                    self.aspect_accuracy.append(tf.reduce_mean(tf.cast(aspect_prediction, "float"),
                                                                name="accuracy-" + str(aspect_index)))
             self.accuracy = tf.reduce_mean(tf.cast(tf.stack(self.aspect_accuracy), "float"), name="average-accuracy")

@@ -23,13 +23,13 @@ class SentenceCNN(object):
         self.l2_reg_lambda = l2_reg_lambda
         self.l2_sum = tf.constant(0.0)
 
-        self.previous_output = previous_component.embedded_expanded
+        self.previous_output = previous_component.last_layer
 
         # Create a convolution + maxpool layer for each filter size
         pooled_outputs = []
         num_filters_total = num_filters * len(filter_size_lists[0])
 
-        for i, filter_size in enumerate(filter_size_lists):
+        for i, filter_size in enumerate(filter_size_lists[0]):
             with tf.name_scope("conv-maxpool-%s" % filter_size):
                 # Convolution Layer
                 filter_shape = [filter_size, embedding_size, 1, num_filters]

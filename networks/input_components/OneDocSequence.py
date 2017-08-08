@@ -22,4 +22,4 @@ class OneDocSequence:
             self.embedded = tf.nn.embedding_lookup(W, self.input_x, name="embedded_words")
             print(("self.embedded " + str(self.embedded.get_shape())))
 
-            self.embedded_expanded = tf.expand_dims(self.embedded, -1)
+            self.last_layer = self.embedded

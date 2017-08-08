@@ -18,4 +18,4 @@ class OneSequence:
             else:
                 W = tf.Variable(init_embedding, name="W", dtype="float32")
             self.embedded = tf.nn.embedding_lookup(W, self.input_x)
-            self.embedded_expanded = tf.expand_dims(self.embedded, -1)
+            self.last_layer = tf.expand_dims(self.embedded, -1)

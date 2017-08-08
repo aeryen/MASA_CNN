@@ -56,7 +56,7 @@ class TrainTask:
         logging.info("Train/Dev split (IST): {:d}/{:d}".
                      format(len(self.train_data.label_instance), len(self.test_data.label_instance)))
 
-    def generates_all_summary(self, grads_and_vars, graph_loss, graph_acc, graph):
+    def generates_all_summary(self, grads_and_vars, graph_loss, graph_acc, graph_asp_acc, graph):
         # Keep track of gradient values and sparsity (optional)
         with tf.name_scope('grad_summary'):
             grad_summaries = []
@@ -75,6 +75,14 @@ class TrainTask:
         # Summaries for loss and accuracy
         loss_summary = tf.summary.scalar("loss", graph_loss)
         acc_summary = tf.summary.scalar("accuracy", graph_acc)
+
+        if graph_asp_acc is not None:
+            asp_acc_summary = []
+            with tf.name_scope("aspect_acc"):
+                for i, asp_acc in enumerate(graph_asp_acc):
+                    asp_acc_summary.append(tf.summary.scalar("accuracy_asp_" + str(i), asp_acc))
+            asp_acc_summary = tf.summary.merge(asp_acc_summary)
+            acc_summary = tf.summary.merge([acc_summary, asp_acc_summary])
 
         # Train Summaries
         with tf.name_scope('train_summary'):
@@ -128,6 +136,7 @@ class TrainTask:
                 graph_input_y = cnn.input_y
                 graph_drop_keep = cnn.dropout_keep_prob
                 graph_is_train = cnn.is_training
+                aspect_accuracy = cnn.aspect_accuracy
             else:
                 saver = tf.train.import_meta_graph("{}.meta".format(self.restore_latest))
                 saver.restore(sess, self.restore_latest)
@@ -158,7 +167,7 @@ class TrainTask:
 
                 self.generates_all_summary(grads_and_vars=grads_and_vars,
                                            graph_loss=graph_loss, graph_acc=graph_accuracy,
-                                           graph=sess.graph)
+                                           graph_asp_acc=aspect_accuracy, graph=sess.graph)
 
                 # Checkpoint directory. Tensorflow assumes this directory already exists so we need to create it
                 checkpoint_dir = os.path.abspath(os.path.join(self.exp_dir, "checkpoints"))
