@@ -6,29 +6,17 @@ import tensorflow as tf
 import os
 import logging
 
+from evaluators.Evaluator import Evaluator
 from data_helpers.DataHelpers import DataHelper
 import utils.ArchiveManager as AM
 from data_helpers.DataHelperHotelOne import DataHelperHotelOne
 
 
-class EvaluatorOrigin:
+class EvaluatorOrigin(Evaluator):
     def __init__(self, dater):
         self.dater = dater
         self.test_data = self.dater.get_test_data()
         self.eval_log = None
-
-    @staticmethod
-    def get_exp_logger(exp_dir, checkpoing_file_name):
-        log_path = exp_dir + checkpoing_file_name + "_eval.log"
-        # logging facility, log both into file and console
-        logging.basicConfig(level=logging.DEBUG,
-                            format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
-                            datefmt='%m-%d %H:%M',
-                            filename=log_path,
-                            filemode='w+')
-        console_logger = logging.StreamHandler()
-        logging.getLogger('').addHandler(console_logger)
-        logging.info("log created: " + log_path)
 
     def evaluate(self, experiment_dir, checkpoint_step, doc_acc=True, do_is_training=True):
         if checkpoint_step is not None:
@@ -36,7 +24,7 @@ class EvaluatorOrigin:
         else:
             checkpoint_file = tf.train.latest_checkpoint(experiment_dir + "/checkpoints/", latest_filename=None)
         file_name = os.path.basename(checkpoint_file)
-        EvaluatorOrigin.get_exp_logger(exp_dir=experiment_dir, checkpoing_file_name=file_name)
+        Evaluator.get_exp_logger(exp_dir=experiment_dir, checkpoing_file_name=file_name)
 
         logging.info("Evaluating: " + __file__)
         logging.info("Test for prob: " + self.dater.problem_name)
@@ -69,7 +57,6 @@ class EvaluatorOrigin:
 
                 # Collect the predictions here
                 all_predictions = []
-
                 for x_test_batch, y_test_batch in zip(x_batches, y_batches):
                     batch_predictions = sess.run(predictions, {input_x: x_test_batch, dropout_keep_prob: 1.0})
                     all_predictions = np.concatenate([all_predictions, batch_predictions], axis=0)

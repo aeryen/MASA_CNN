@@ -4,7 +4,7 @@ import logging
 from utils.ArchiveManager import ArchiveManager
 
 from data_helpers.DataHelperHotelOne import DataHelperHotelOne
-from evaluators.eval_a_origin import EvaluatorOrigin
+from evaluators.EvaluatorOrigin import EvaluatorOrigin
 from trainers.TrainTask import TrainTask
 
 def get_exp_logger(am):

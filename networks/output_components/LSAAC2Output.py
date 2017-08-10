@@ -68,11 +68,11 @@ class LSAAOutput(object):
                                                   name="output_score")
             print(("batch_sent_rating_aspect " + str(batch_sent_rating_aspect.get_shape())))
 
-            # [, review, 6 aspect, rating]
+            # [review, 6 aspect, rating]
             self.scores = tf.reduce_sum(batch_sent_rating_aspect, 1, name="output_scores")
             print(("batch_review_aspect_score " + str(self.scores.get_shape())))
 
-            # [6 aspect, review]
+            # [review, 6 aspect]
             self.predictions = tf.argmax(self.scores, 2, name="output_value")
             print(("self.predictions " + str(self.predictions.get_shape())))
 
