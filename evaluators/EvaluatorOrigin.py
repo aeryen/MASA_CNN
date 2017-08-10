@@ -68,8 +68,7 @@ class EvaluatorOrigin(Evaluator):
         # all_predictions = np.array(all_predictions)
         # average_accuracy = all_predictions.sum(axis=0) / float(all_predictions.shape[0])
         average_accuracy = correct_predictions / len(all_predictions)
-        logging.info("Total number of test examples: {}".format(len(self.test_data.label_instance)))
-        logging.info("\t" + str(average_accuracy))
+        logging.info("ACC\t" + str(average_accuracy))
 
         mse = mean_squared_error(y_true=index_label, y_pred=all_predictions)
         logging.info(("MSE\t" + str(mse)))
@@ -77,9 +76,15 @@ class EvaluatorOrigin(Evaluator):
 
 
 if __name__ == "__main__":
-    dater = DataHelperHotelOne(embed_dim=300, target_sent_len=1024, target_doc_len=None,
-                               aspect_id=1, doc_as_sent=True)
-    ev = EvaluatorOrigin(dater=dater)
+    experiment_dir = "C:\\Users\\aeryen\\Desktop\\MASA_CNN\\runs\\TripAdvisor_Origin\\170731_1501526605"
+    checkpoint_steps = [5000]
 
-    ev.evaluate(experiment_dir="C:\\Users\\aeryen\\Desktop\\MASA_CNN\\runs\\TripAdvisor_Origin\\170731_1501493057",
-                checkpoint_step=4000)
+    for step in checkpoint_steps:
+        EvaluatorOrigin.get_exp_logger(exp_dir=experiment_dir, checkpoing_file_name=str(step))
+
+        dater = DataHelperHotelOne(embed_dim=300, target_sent_len=1024, target_doc_len=None,
+                                   aspect_id=1, doc_as_sent=True)
+        ev = EvaluatorOrigin(dater=dater)
+
+        ev.evaluate(experiment_dir=experiment_dir,
+                    checkpoint_step=step)
