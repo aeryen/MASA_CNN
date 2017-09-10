@@ -11,29 +11,35 @@ class DocumentCNN(object):
     """
 
     def __init__(
-            self, previous_component, document_length, sequence_length,
-            embedding_size, filter_size_lists, num_filters,
+            self, prev_comp, data,
+            filter_size_lists, num_filters,
             dropout=0.0, batch_normalize=False, elu=False, fc=[], l2_reg_lambda=0.0):
-        self.is_training = tf.placeholder(tf.bool, name='is_training')
+
+        self.previous_output = prev_comp.last_layer
+        self.document_length = data.document_length
+        self.sequence_length = data.sequence_length
+        self.embedding_size = data.embedding_size
+
+        self.filter_size_lists = filter_size_lists
+        self.num_filters = num_filters
         self.dropout = dropout
         self.batch_normalize = batch_normalize
         self.elu = elu
-        self.last_layer = None
         self.l2_reg_lambda = l2_reg_lambda
-        self.l2_sum = tf.constant(0.0)
 
-        self.previous_output = previous_component.last_layer
+        self.is_training = tf.placeholder(tf.bool, name='is_training')
+        self.l2_sum = tf.constant(0.0)
 
         # Create a convolution + maxpool layer for each filter size
         pooled_outputs = []
-        num_filters_total = num_filters * len(filter_size_lists[0])
+        num_filters_total = num_filters * len(self.filter_size_lists[0])
 
-        for i, filter_size in enumerate(filter_size_lists[0]):
+        for i, filter_size in enumerate(self.filter_size_lists[0]):
             with tf.name_scope("conv-maxpool" + str(i)):
                 # Convolution Layer
-                filter_shape = [1, filter_size, embedding_size, num_filters]
+                filter_shape = [1, filter_size, self.embedding_size, self.num_filters]
                 W = tf.Variable(tf.truncated_normal(filter_shape, stddev=0.1), name="W")
-                b = tf.Variable(tf.constant(0.1, shape=[num_filters]), name="b")
+                b = tf.Variable(tf.constant(0.1, shape=[self.num_filters]), name="b")
                 conv = tf.nn.conv2d(
                     self.previous_output,
                     W,
@@ -47,7 +53,7 @@ class DocumentCNN(object):
                 # Max-pooling over the outputs
                 pooled = tf.nn.max_pool(
                     h,
-                    ksize=[1, 1, sequence_length - filter_size + 1, 1],
+                    ksize=[1, 1, self.sequence_length - filter_size + 1, 1],
                     strides=[1, 1, 1, 1],
                     padding='VALID',
                     name="pool")
@@ -64,7 +70,7 @@ class DocumentCNN(object):
             # [batch_size * sentence, num_filters_total]
             self.last_layer = tf.nn.dropout(self.h_pool, self.dropout, name="h_drop_sentence")
             # [batch_size, sentence * num_filters_total]
-            self.last_layer = tf.reshape(self.last_layer, [-1, document_length, num_filters_total],
+            self.last_layer = tf.reshape(self.last_layer, [-1, self.document_length, num_filters_total],
                                          name="h_drop_review")
 
     def get_last_layer_info(self):

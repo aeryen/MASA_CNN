@@ -16,14 +16,15 @@ def get_time():
 
 class ArchiveManager:
 
-    def __init__(self, problem_name, exp_name, truth_file=None):
-        self.problem_name = problem_name
-        self.exp_name = exp_name
+    def __init__(self, input_name, middle_name, output_name, truth_file=None):
+        self.input_name = input_name
+        self.middle_name = middle_name
+        self.output_name = output_name
         self.truth_file = truth_file
         self.time_stamp = str(int(time.time()))
 
     def get_tag(self):
-        tag = self.problem_name + "_" + self.exp_name
+        tag = self.input_name + "_" + self.middle_name + self.output_name
         return tag
 
     def get_tag_dir(self):

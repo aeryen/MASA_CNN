@@ -57,6 +57,7 @@ class EvaluatorOrigin(Evaluator):
 
                 # Collect the predictions here
                 all_predictions = []
+
                 for x_test_batch, y_test_batch in zip(x_batches, y_batches):
                     batch_predictions = sess.run(predictions, {input_x: x_test_batch, dropout_keep_prob: 1.0})
                     all_predictions = np.concatenate([all_predictions, batch_predictions], axis=0)

@@ -3,7 +3,7 @@ from networks.input_components.OneDocSequence import OneDocSequence
 from networks.middle_components.SentenceCNN import SentenceCNN
 from networks.middle_components.DocumentCNN import DocumentCNN
 from networks.output_components.trip_advisor_output import TripAdvisorOutput
-from networks.output_components.LSAAC2Output import LSAAOutput
+from networks.output_components.LSAAC2Output import LSAAC2Output
 
 from data_helpers.Data import DataObject
 
@@ -40,13 +40,13 @@ class NetworkBuilder:
 
         # middle component =====
         if middle_component == 'Origin':
-            self.middle_comp = SentenceCNN(previous_component=self.input_comp,
+            self.middle_comp = SentenceCNN(prev_comp=self.input_comp,
                                            sequence_length=sequence_length, embedding_size=embedding_size,
                                            filter_size_lists=filter_size_lists, num_filters=num_filters,
                                            dropout=dropout, batch_normalize=batch_normalize, elu=elu,
                                            fc=fc, l2_reg_lambda=l2_reg_lambda)
         elif middle_component == "DocumentCNN":
-            self.middle_comp = DocumentCNN(previous_component=self.input_comp,
+            self.middle_comp = DocumentCNN(prev_comp=self.input_comp,
                                            document_length=document_length, sequence_length=sequence_length,
                                            embedding_size=embedding_size,
                                            filter_size_lists=filter_size_lists, num_filters=num_filters,
@@ -67,10 +67,10 @@ class NetworkBuilder:
         if "TripAdvisor" in output_component:
             self.output = TripAdvisorOutput(self.input_comp.input_y, prev_layer, num_classes, l2_sum, l2_reg_lambda)
         elif "LSAA" in output_component:
-            self.output = LSAAOutput(prev_layer=prev_layer, input_y=self.input_comp.input_y,
-                                num_aspects=num_aspects, num_classes=num_classes,
-                                document_length=document_length,
-                                l2_sum=l2_sum, l2_reg_lambda=l2_reg_lambda)
+            self.output = LSAAC2Output(prev_comp=prev_layer, input_y=self.input_comp.input_y,
+                                       num_aspects=num_aspects, num_classes=num_classes,
+                                       document_length=document_length,
+                                       l2_sum=l2_sum, l2_reg_lambda=l2_reg_lambda)
         else:
             raise NotImplementedError
 
@@ -83,6 +83,7 @@ class NetworkBuilder:
             self.aspect_accuracy = self.output.aspect_accuracy
         except NameError:
             self.aspect_accuracy = None
+
 
 if __name__ == "__main__":
     data = DataObject("test", 100)

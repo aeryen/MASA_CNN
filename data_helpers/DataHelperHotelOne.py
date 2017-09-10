@@ -115,6 +115,7 @@ class DataHelperHotelOne(DataHelper):
         self.test_data.vocab_inv = self.vocab_inv
         self.test_data.label_instance = self.test_data.label_doc
 
+
 if __name__ == "__main__":
     a = DataHelperHotelOne(embed_dim=300, target_doc_len=64, target_sent_len=1024, aspect_id=None,
                            doc_as_sent=False, doc_level=True)
