@@ -4,7 +4,7 @@ from enum import Enum
 class DataObject:
     def __init__(self, name, size):
         self.name = name
-        self.size = size
+        self.num_instance = size
         self.file_id = None
         self.raw = None
         self.value = None

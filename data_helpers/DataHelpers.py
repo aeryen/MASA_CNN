@@ -9,31 +9,28 @@ from collections import Counter
 
 class DataHelper(object):
     def __init__(self, embed_dim, target_doc_len, target_sent_len):
-        logging.info("setting: %s is %s", "embed_dim", embed_dim)
-        logging.info("setting: %s is %s", "target_doc_len", target_doc_len)
-
         assert embed_dim is not None
         assert target_sent_len is not None
-
-        self.num_classes = None
 
         self.embedding_dim = embed_dim
         self.target_doc_len = target_doc_len
         self.target_sent_len = target_sent_len
+        logging.info("setting: %s is %s", "embed_dim", embed_dim)
+        logging.info("setting: %s is %s", "target_doc_len", target_doc_len)
+        logging.info("setting: %s is %s", "target_sent_len", target_sent_len)
 
         self.train_data = None
         self.test_data = None
+        self.num_classes = None
         self.vocab = None
         self.vocab_inv = None
-        self.embed_matrix = None
+        self.init_embedding = None
         self.vocabulary_size = 20000
 
         self.glove_dir = os.path.join(os.path.dirname(__file__), 'glove/')
         self.glove_path = self.glove_dir + "glove.6B." + str(self.embedding_dim) + "d.txt"
-        self.w2v_dir = os.path.join(os.path.dirname(__file__), 'w2v/')
-        self.w2v_path = self.w2v_dir + "GoogleNews-vectors-negative300.bin"
 
-        self.data_path = os.path.join(os.path.dirname(__file__), '..', 'data/')
+        self.data_dir_path = os.path.join(os.path.dirname(__file__), '..', 'data/')
 
         print("loading embedding.")
         glove_pickle = os.path.join(os.path.dirname(__file__), 'glove.pickle')

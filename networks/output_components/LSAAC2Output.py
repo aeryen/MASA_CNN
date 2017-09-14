@@ -3,12 +3,13 @@ import logging
 
 
 class LSAAC2Output(object):
-    def __init__(self, prev_comp, data, l2_reg_lambda):
+    def __init__(self, input_comp, prev_comp, data, l2_reg_lambda):
+        self.label = input_comp.input_y
+        self.s_count = input_comp.input_s_count
         self.prev_output = prev_comp.last_layer
         self.prev_layer_size = self.prev_output.get_shape()[-1].value
 
         self.document_length = data.document_length
-        self.label_instance = data.label_instance
         self.num_aspects = data.num_aspects
         self.num_classes = data.num_classes
 
@@ -18,8 +19,8 @@ class LSAAC2Output(object):
         else:
             self.l2_sum = tf.constant(0.0)
 
-        self.previous_output = tf.reshape(self.previous_output, [-1, self.prev_layer_size],
-                                          name="sentence_features")
+        self.prev_output = tf.reshape(self.prev_output, [-1, self.prev_layer_size],
+                                      name="sentence_features")
 
         # per sentence score
         self.rating_score = []
@@ -32,7 +33,7 @@ class LSAAC2Output(object):
                 b = tf.Variable(tf.constant(0.1, shape=[self.num_classes]), name="b_asp")
                 self.l2_sum += tf.nn.l2_loss(W)
                 # [batch_size * sentence]
-                self.rating_score = tf.nn.xw_plus_b(self.previous_output, W, b, name="score_asp")
+                self.rating_score = tf.nn.xw_plus_b(self.prev_output, W, b, name="score_asp")
                 # scores = tf.reshape(scores, [-1], name="score_a" + str(aspect_index))
                 print(("self.aspect_rating_score " + str(self.rating_score.get_shape())))
 
@@ -43,7 +44,7 @@ class LSAAC2Output(object):
                 initializer=tf.contrib.layers.xavier_initializer())
             b = tf.Variable(tf.constant(0.1, shape=[self.num_aspects + 1]), name="b_r")
             self.l2_sum += tf.nn.l2_loss(W) * 0.5
-            self.attri_scores = tf.nn.xw_plus_b(self.previous_output, W, b, name="scores_related")
+            self.attri_scores = tf.nn.xw_plus_b(self.prev_output, W, b, name="scores_related")
             # [batch_size * sentence, num_aspects]
             self.attri_dist = tf.nn.softmax(self.attri_scores, name="softmax_related")
             print(("self.related_distribution " + str(self.attri_dist.get_shape())))
@@ -84,14 +85,14 @@ class LSAAC2Output(object):
         with tf.name_scope("loss-lbd" + str(l2_reg_lambda)):
             # sum_along_rating = tf.reduce_sum(batch_sent_rating_aspect_score, 1)
             # self.normalized_dist = tf.div(batch_sent_rating_aspect_score, sum_along_rating)
-            losses = 0.0
+            losses = tf.constant(0.0)
             for aspect_index in range(self.num_aspects):
                 aspect_losses = \
                     tf.nn.softmax_cross_entropy_with_logits(logits=self.scores[:, aspect_index, :],
-                                                            labels=self.label_instance[:, aspect_index, :],
+                                                            labels=self.label[:, aspect_index, :],
                                                             name="aspect_" + str(aspect_index) + "_loss")
                 losses = tf.add(losses, tf.reduce_mean(aspect_losses), name="aspect_loss_sum")
-            self.loss = losses + l2_reg_lambda * self.l2_sum
+            self.loss = losses  # + l2_reg_lambda * self.l2_sum
 
         # Accuracy
         with tf.name_scope("accuracy"):
@@ -99,7 +100,7 @@ class LSAAC2Output(object):
             for aspect_index in range(self.num_aspects):
                 with tf.name_scope("aspect_" + str(aspect_index)):
                     aspect_prediction = (tf.equal(self.predictions[:, aspect_index],
-                                                  tf.argmax(self.label_instance[:, aspect_index, :], 1)))
+                                                  tf.argmax(self.label[:, aspect_index, :], 1)))
                     self.aspect_accuracy.append(tf.reduce_mean(tf.cast(aspect_prediction, "float"),
                                                                name="accuracy-" + str(aspect_index)))
             self.accuracy = tf.reduce_mean(tf.cast(tf.stack(self.aspect_accuracy), "float"), name="average-accuracy")

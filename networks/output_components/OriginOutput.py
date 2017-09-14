@@ -2,7 +2,7 @@ import tensorflow as tf
 import logging
 
 
-class TripAdvisorOutput(object):
+class OriginOutput(object):
     def __init__(self, prev_comp, data, l2_reg_lambda):
         self.prev_output = prev_comp.last_layer
         self.num_classes = data.num_classes
@@ -38,4 +38,3 @@ class TripAdvisorOutput(object):
         with tf.variable_scope("accuracy"):
             correct_predictions = tf.equal(self.predictions, tf.argmax(self.label_instance, 1))
             self.accuracy = tf.reduce_mean(tf.cast(correct_predictions, "float"), name="accuracy")
-

@@ -24,7 +24,7 @@ class DataHelperHotelOne(DataHelper):
         logging.info("setting: %s is %s", "sent_list_doc", doc_level)
         self.doc_level = doc_level
 
-        self.dataset_dir = self.data_path + 'hotel_balance_LengthFix1_3000per/'
+        self.dataset_dir = self.data_dir_path + 'hotel_balance_LengthFix1_3000per/'
         self.num_classes = 5
         self.num_aspects = 6
 
@@ -85,7 +85,7 @@ class DataHelperHotelOne(DataHelper):
     def load_all_data(self):
         train_data = self.load_files(0)
         self.vocab, self.vocab_inv = self.build_vocab([train_data], self.vocabulary_size)
-        self.embed_matrix = self.build_glove_embedding(self.vocab_inv)
+        self.init_embedding = self.build_glove_embedding(self.vocab_inv)
         train_data = self.build_content_vector(train_data)
         train_data = self.pad_sentences(train_data)
 
@@ -95,7 +95,11 @@ class DataHelperHotelOne(DataHelper):
             DataHelper.pad_document(train_data, self.target_doc_len)
 
         self.train_data = train_data
-        self.train_data.embed_matrix = self.embed_matrix
+        self.train_data.document_length = self.target_doc_len
+        self.train_data.sequence_length = self.target_sent_len
+        self.train_data.num_aspects = self.num_aspects
+        self.train_data.num_classes = self.num_classes
+        self.train_data.init_embedding = self.init_embedding
         self.train_data.vocab = self.vocab
         self.train_data.vocab_inv = self.vocab_inv
         self.train_data.label_instance = self.train_data.label_doc
@@ -110,7 +114,11 @@ class DataHelperHotelOne(DataHelper):
             DataHelper.pad_document(test_data, self.target_doc_len)
 
         self.test_data = test_data
-        self.test_data.embed_matrix = self.embed_matrix
+        self.test_data.document_length = self.target_doc_len
+        self.test_data.sequence_length = self.target_sent_len
+        self.test_data.num_aspects = self.num_aspects
+        self.test_data.num_classes = self.num_classes
+        self.test_data.init_embedding = self.init_embedding
         self.test_data.vocab = self.vocab
         self.test_data.vocab_inv = self.vocab_inv
         self.test_data.label_instance = self.test_data.label_doc

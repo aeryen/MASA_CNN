@@ -2,7 +2,7 @@ from networks.input_components.OneSequence import OneSequence
 from networks.input_components.OneDocSequence import OneDocSequence
 from networks.middle_components.SentenceCNN import SentenceCNN
 from networks.middle_components.DocumentCNN import DocumentCNN
-from networks.output_components.trip_advisor_output import TripAdvisorOutput
+from networks.output_components.OriginOutput import OriginOutput
 from networks.output_components.LSAAC2Output import LSAAC2Output
 
 from data_helpers.Data import DataObject
@@ -65,7 +65,7 @@ class NetworkBuilder:
 
         # output component =====
         if "TripAdvisor" in output_component:
-            self.output = TripAdvisorOutput(self.input_comp.input_y, prev_layer, num_classes, l2_sum, l2_reg_lambda)
+            self.output = OriginOutput(self.input_comp.input_y, prev_layer, num_classes, l2_sum, l2_reg_lambda)
         elif "LSAA" in output_component:
             self.output = LSAAC2Output(prev_comp=prev_layer, input_y=self.input_comp.input_y,
                                        num_aspects=num_aspects, num_classes=num_classes,

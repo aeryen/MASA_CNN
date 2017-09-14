@@ -16,7 +16,8 @@ def get_time():
 
 class ArchiveManager:
 
-    def __init__(self, input_name, middle_name, output_name, truth_file=None):
+    def __init__(self, data_name, input_name, middle_name, output_name, truth_file=None):
+        self.data_name = data_name
         self.input_name = input_name
         self.middle_name = middle_name
         self.output_name = output_name
@@ -24,7 +25,7 @@ class ArchiveManager:
         self.time_stamp = str(int(time.time()))
 
     def get_tag(self):
-        tag = self.input_name + "_" + self.middle_name + self.output_name
+        tag = self.data_name + "_" + self.input_name + "_" + self.middle_name + "_" + self.output_name
         return tag
 
     def get_tag_dir(self):

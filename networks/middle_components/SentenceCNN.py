@@ -13,15 +13,16 @@ class SentenceCNN(object):
     def __init__(
             self, prev_comp, data,
             filter_size_lists, num_filters,
-            dropout=0.0, batch_normalize=False, elu=False, fc=[], l2_reg_lambda=0.0):
+            batch_normalize=False, elu=False, fc=[], l2_reg_lambda=0.0):
 
-        self.previous_output = prev_comp.last_layer
+        self.dropout = prev_comp.dropout_keep_prob
+        self.prev_output = prev_comp.last_layer
+
         self.sequence_length = data.sequence_length
         self.embedding_size = data.embedding_size
 
         self.filter_size_lists = filter_size_lists
         self.num_filters = num_filters
-        self.dropout = dropout
         self.batch_normalize = batch_normalize
         self.elu = elu
         self.l2_reg_lambda = l2_reg_lambda
@@ -40,7 +41,7 @@ class SentenceCNN(object):
                 W = tf.Variable(tf.truncated_normal(filter_shape, stddev=0.1), name="W")
                 b = tf.Variable(tf.constant(0.1, shape=[self.num_filters]), name="b")
                 conv = tf.nn.conv2d(
-                    self.previous_output,
+                    self.prev_output,
                     W,
                     strides=[1, 1, 1, 1],
                     padding="VALID",
