@@ -65,18 +65,17 @@ if __name__ == "__main__":
         middle_comp = CNNNetworkBuilder.get_middle_component(middle_name=middle_comp_name, input_comp=input_comp,
                                                              data=dater.get_train_data(),
                                                              filter_size_lists=[[3, 4, 5]], num_filters=100,
-                                                             batch_norm=None, elu=None, fc=[],
-                                                             l2_reg=0.0)
+                                                             batch_norm=None, elu=None, fc=[])
         output_comp = CNNNetworkBuilder.get_output_component(output_name=output_comp_name,
                                                              input_comp=input_comp,
                                                              middle_comp=middle_comp,
-                                                             data=dater.get_train_data(), l2_reg=0.0)
+                                                             data=dater.get_train_data(), l2_reg=0.1)
 
         tt = TrainTask(data_helper=dater, am=am,
                        input_component=input_comp,
                        middle_component=middle_comp,
                        output_component=output_comp,
-                       batch_size=8, total_step=6000, evaluate_every=500, checkpoint_every=5000, max_to_keep=6,
+                       batch_size=16, total_step=10000, evaluate_every=500, checkpoint_every=1000, max_to_keep=6,
                        restore_path=None)
 
         start = timer()

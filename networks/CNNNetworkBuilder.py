@@ -55,10 +55,9 @@ class CNNNetworkBuilder:
     @staticmethod
     def get_middle_component(middle_name, input_comp, data,
                              filter_size_lists=None, num_filters=None,
-                             batch_norm=None, elu=None, fc=[], l2_reg=0.0):
+                             batch_norm=None, elu=None, fc=[]):
         logging.info("setting: %s is %s", "filter_size_lists", filter_size_lists)
         logging.info("setting: %s is %s", "num_filters", num_filters)
-        logging.info("setting: %s is %s", "l2_reg", l2_reg)
         logging.info("setting: %s is %s", "batch_norm", batch_norm)
         logging.info("setting: %s is %s", "elu", elu)
         logging.info("setting: %s is %s", "fc", fc)
@@ -67,12 +66,12 @@ class CNNNetworkBuilder:
             middle_comp = SentenceCNN(prev_comp=input_comp, data=data,
                                       filter_size_lists=filter_size_lists, num_filters=num_filters,
                                       batch_normalize=batch_norm, elu=elu,
-                                      fc=fc, l2_reg_lambda=l2_reg)
+                                      fc=fc)
         elif middle_name == "DocumentCNN":
             middle_comp = DocumentCNN(prev_comp=input_comp, data=data,
                                       filter_size_lists=filter_size_lists, num_filters=num_filters,
                                       batch_normalize=batch_norm, elu=elu,
-                                      fc=fc, l2_reg_lambda=l2_reg)
+                                      fc=fc)
         else:
             raise NotImplementedError
 
@@ -80,6 +79,8 @@ class CNNNetworkBuilder:
 
     @staticmethod
     def get_output_component(output_name, input_comp, middle_comp, data, l2_reg=0.0):
+        logging.info("setting: %s is %s", "l2_reg", l2_reg)
+
         if "OriginOutput" in output_name:
             output_comp = OriginOutput(input_comp=input_comp, prev_comp=middle_comp, data=data, l2_reg_lambda=l2_reg)
         elif "LSAAC2" in output_name:
