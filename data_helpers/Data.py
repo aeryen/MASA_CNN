@@ -6,17 +6,25 @@ class DataObject:
         self.name = name
         self.num_instance = size
         self.file_id = None
+
         self.raw = None
         self.value = None
+
         self.label_doc = None
         self.label_instance = None  # this is for sentences or comb or paragraph
+
         self.doc_size = None
         self.doc_size_trim = None
 
         self.vocab = None
         self.vocab_inv = None
-        self.embed_matrix = None
-        self.embed_matrix_w2v = None
+        self.init_embedding = None
+        self.init_embedding_w2v = None
+
+        self.target_doc_len = None
+        self.target_sent_len = None
+        self.num_aspects = None
+        self.num_classes = None
 
     def init_empty_list(self):
         self.file_id = []
@@ -32,4 +40,3 @@ class LoadMethod(Enum):
     DOC = 1
     COMB = 2
     SENT = 3
-

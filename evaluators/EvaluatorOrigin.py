@@ -16,7 +16,6 @@ class EvaluatorOrigin(Evaluator):
     def __init__(self, dater):
         self.dater = dater
         self.test_data = self.dater.get_test_data()
-        self.eval_log = None
 
     def evaluate(self, experiment_dir, checkpoint_step, doc_acc=True, do_is_training=True):
         if checkpoint_step is not None:
@@ -36,7 +35,7 @@ class EvaluatorOrigin(Evaluator):
         with graph.as_default():
             session_conf = tf.ConfigProto(
                 allow_soft_placement=True,
-                log_device_placement=True)
+                log_device_placement=False)
             sess = tf.Session(config=session_conf)
             with sess.as_default():
                 # Load the saved meta graph and restore variables
@@ -77,14 +76,18 @@ class EvaluatorOrigin(Evaluator):
 
 
 if __name__ == "__main__":
-    experiment_dir = "C:\\Users\\aeryen\\Desktop\\MASA_CNN\\runs\\TripAdvisor_Origin\\170731_1501526605"
-    checkpoint_steps = [5000]
+    experiment_dir = "E:\\Research\\Paper 02\\MASA_CNN\\runs\\" \
+                     "TripAdvisorDoc_Document_DocumentCNN_LSAAC2\\170915_1505520361"
+    checkpoint_steps = [5000, 6000]
 
     for step in checkpoint_steps:
         EvaluatorOrigin.get_exp_logger(exp_dir=experiment_dir, checkpoing_file_name=str(step))
 
-        dater = DataHelperHotelOne(embed_dim=300, target_sent_len=1024, target_doc_len=None,
-                                   aspect_id=1, doc_as_sent=True)
+        dater = DataHelperHotelOne(embed_dim=300, target_doc_len=64, target_sent_len=512,
+                                   aspect_id=None, doc_as_sent=False, doc_level=True)
+
+        # dater = DataHelperHotelOne(embed_dim=300, target_sent_len=1024, target_doc_len=None,
+        #                            aspect_id=1, doc_as_sent=True)
         ev = EvaluatorOrigin(dater=dater)
 
         ev.evaluate(experiment_dir=experiment_dir,

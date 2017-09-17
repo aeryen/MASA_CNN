@@ -92,7 +92,7 @@ class LSAAC2Output(object):
                                                             labels=self.label[:, aspect_index, :],
                                                             name="aspect_" + str(aspect_index) + "_loss")
                 losses = tf.add(losses, tf.reduce_mean(aspect_losses), name="aspect_loss_sum")
-            self.loss = losses  + l2_reg_lambda * self.l2_sum
+            self.loss = losses + l2_reg_lambda * self.l2_sum
 
         # Accuracy
         with tf.name_scope("accuracy"):

@@ -7,15 +7,13 @@ from data_helpers.Data import DataObject
 
 class DataHelperHotelOne(DataHelper):
 
-    problem_name = "TripAdvisor"
-
     sent_num_file = ["aspect_0.count", "test_aspect_0.count"]
     rating_file = ["aspect_0.rating", "test_aspect_0.rating"]
     content_file = ["aspect_0.txt", "test_aspect_0.txt"]
 
     def __init__(self, embed_dim, target_doc_len, target_sent_len, aspect_id, doc_as_sent=False, doc_level=True):
-        super(DataHelperHotelOne, self).__init__(embed_dim=embed_dim, target_doc_len=target_doc_len,
-                                                 target_sent_len=target_sent_len)
+        super(DataHelperHotelOne, self).__init__(problem_name="TripAdvisor", embed_dim=embed_dim,
+                                                 target_doc_len=target_doc_len, target_sent_len=target_sent_len)
 
         logging.info("setting: %s is %s", "aspect_id", aspect_id)
         self.aspect_id = aspect_id
@@ -30,7 +28,7 @@ class DataHelperHotelOne(DataHelper):
 
         self.load_all_data()
 
-    def load_files(self, load_test):
+    def load_files(self, load_test) -> DataObject:
         """
         Loads MR polarity data from files, splits the data into words and generates labels.
         Returns split sentences and labels.
@@ -95,8 +93,8 @@ class DataHelperHotelOne(DataHelper):
             DataHelper.pad_document(train_data, self.target_doc_len)
 
         self.train_data = train_data
-        self.train_data.document_length = self.target_doc_len
-        self.train_data.sequence_length = self.target_sent_len
+        self.train_data.target_doc_len = self.target_doc_len
+        self.train_data.target_sent_len = self.target_sent_len
         self.train_data.num_aspects = self.num_aspects
         self.train_data.num_classes = self.num_classes
         self.train_data.init_embedding = self.init_embedding
@@ -114,8 +112,8 @@ class DataHelperHotelOne(DataHelper):
             DataHelper.pad_document(test_data, self.target_doc_len)
 
         self.test_data = test_data
-        self.test_data.document_length = self.target_doc_len
-        self.test_data.sequence_length = self.target_sent_len
+        self.test_data.target_doc_len = self.target_doc_len
+        self.test_data.target_sent_len = self.target_sent_len
         self.test_data.num_aspects = self.num_aspects
         self.test_data.num_classes = self.num_classes
         self.test_data.init_embedding = self.init_embedding

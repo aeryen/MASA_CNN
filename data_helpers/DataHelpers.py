@@ -6,21 +6,28 @@ from sklearn.preprocessing import OneHotEncoder
 import os
 from collections import Counter
 
+from data_helpers.Data import DataObject
+
 
 class DataHelper(object):
-    def __init__(self, embed_dim, target_doc_len, target_sent_len):
+    def __init__(self, problem_name, embed_dim, target_doc_len, target_sent_len):
+        assert problem_name is not None
         assert embed_dim is not None
         assert target_sent_len is not None
 
+        self.problem_name = problem_name
         self.embedding_dim = embed_dim
         self.target_doc_len = target_doc_len
         self.target_sent_len = target_sent_len
-        logging.info("setting: %s is %s", "embed_dim", embed_dim)
-        logging.info("setting: %s is %s", "target_doc_len", target_doc_len)
-        logging.info("setting: %s is %s", "target_sent_len", target_sent_len)
+        logging.info("DataHelpers: %s is %s", "problem_name", problem_name)
+        logging.info("DataHelpers: %s is %s", "embed_dim", embed_dim)
+        logging.info("DataHelpers: %s is %s", "target_doc_len", target_doc_len)
+        logging.info("DataHelpers: %s is %s", "target_sent_len", target_sent_len)
 
         self.train_data = None
+        self.train_data: DataObject
         self.test_data = None
+        self.test_data: DataObject
         self.num_classes = None
         self.vocab = None
         self.vocab_inv = None
@@ -39,10 +46,10 @@ class DataHelper(object):
         self.glove_words, self.glove_vectors = pickle.load(open(glove_pickle, "rb"))
         print("loading embedding completed.")
 
-    def get_train_data(self):
+    def get_train_data(self) -> DataObject:
         return self.train_data
 
-    def get_test_data(self):
+    def get_test_data(self) -> DataObject:
         return self.test_data
 
     def get_vocab(self):
@@ -105,7 +112,7 @@ class DataHelper(object):
             padded_sentences.append(new_sentence)
         return padded_sentences
 
-    def pad_sentences(self, data):
+    def pad_sentences(self, data: DataObject) -> DataObject:
         if self.target_sent_len is not None and self.target_sent_len > 0:
             max_length = self.target_sent_len
         else:
@@ -126,7 +133,7 @@ class DataHelper(object):
         return data
 
     @staticmethod
-    def pad_document(data, target_length=-1):
+    def pad_document(data: DataObject, target_length=-1) -> DataObject:
         docs = data.value
         lens = data.doc_size
         if target_length > 0:
@@ -204,7 +211,7 @@ class DataHelper(object):
 
         return y_onehot
 
-    def build_content_vector(self, data):
+    def build_content_vector(self, data: DataObject) -> DataObject:
         unk = self.vocab["<UNK>"]
         content_vector = np.array([[self.vocab.get(word, unk) for word in sent] for sent in data.raw])
         data.value = content_vector

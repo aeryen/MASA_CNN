@@ -13,6 +13,9 @@ class Evaluator(object):
 
     @staticmethod
     def get_exp_logger(exp_dir, checkpoing_file_name):
+        if logging.root:
+            del logging.root.handlers[:]
+
         log_path = exp_dir + checkpoing_file_name + "_eval.log"
         # logging facility, log both into file and console
         logging.basicConfig(level=logging.DEBUG,
