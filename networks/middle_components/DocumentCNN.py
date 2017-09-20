@@ -1,6 +1,7 @@
 import tensorflow as tf
 import numpy as np
 
+from data_helpers.Data import DataObject
 
 class DocumentCNN(object):
     """
@@ -11,15 +12,15 @@ class DocumentCNN(object):
     """
 
     def __init__(
-            self, prev_comp, data,
+            self, prev_comp, data: DataObject,
             filter_size_lists, num_filters,
             batch_normalize=False, elu=False, fc=[]):
 
         self.dropout = prev_comp.dropout_keep_prob
         self.prev_output = prev_comp.last_layer
 
-        self.document_length = data.document_length
-        self.sequence_length = data.sequence_length
+        self.document_length = data.target_doc_len
+        self.sequence_length = data.target_sent_len
         self.embedding_dim = data.init_embedding.shape[1]
 
         self.filter_size_lists = filter_size_lists

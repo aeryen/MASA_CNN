@@ -10,6 +10,7 @@ from networks.middle_components.SentenceCNN import SentenceCNN
 
 from networks.output_components.OriginOutput import OriginOutput
 from networks.output_components.LSAAC2Output import LSAAC2Output
+from networks.output_components.AllAspectAvgBaseline import AllAspectAvgBaseline
 
 
 class CNNNetworkBuilder:
@@ -85,6 +86,8 @@ class CNNNetworkBuilder:
             output_comp = OriginOutput(input_comp=input_comp, prev_comp=middle_comp, data=data, l2_reg_lambda=l2_reg)
         elif "LSAAC2" in output_name:
             output_comp = LSAAC2Output(input_comp=input_comp, prev_comp=middle_comp, data=data, l2_reg_lambda=l2_reg)
+        elif "AAAB" in output_name:
+            output_comp = AllAspectAvgBaseline(input_comp=input_comp, prev_comp=middle_comp, data=data, l2_reg_lambda=l2_reg)
         else:
             raise NotImplementedError
 

@@ -4,7 +4,7 @@ import logging
 from data_helpers.Data import DataObject
 
 
-class LSAAC2Output(object):
+class AllAspectAvgBaseline(object):
     def __init__(self, input_comp, prev_comp, data: DataObject, l2_reg_lambda):
         self.label = input_comp.input_y
         self.s_count = input_comp.input_s_count
@@ -25,48 +25,26 @@ class LSAAC2Output(object):
                                       name="sentence_features")
 
         # per sentence score
-        self.rating_score = []
+        self.rating_scores = []
         with tf.name_scope("rating-score"):
             with tf.name_scope("aspect"):
-                W = tf.get_variable(
-                    "W_asp",
-                    shape=[self.prev_layer_size, self.num_classes],
-                    initializer=tf.contrib.layers.xavier_initializer())
-                b = tf.Variable(tf.constant(0.1, shape=[self.num_classes]), name="b_asp")
-                self.l2_sum += tf.nn.l2_loss(W)
-                # [batch_size * sentence]
-                self.rating_score = tf.nn.xw_plus_b(self.prev_output, W, b, name="score_asp")
-                # scores = tf.reshape(scores, [-1], name="score_a" + str(aspect_index))
-                print(("self.aspect_rating_score " + str(self.rating_score.get_shape())))
+                for aspect_index in range(1, self.num_aspects):
+                    W = tf.get_variable(
+                        "W_asp"+str(aspect_index),
+                        shape=[self.prev_layer_size, self.num_classes],
+                        initializer=tf.contrib.layers.xavier_initializer())
+                    b = tf.Variable(tf.constant(0.1, shape=[self.num_classes]), name="b_asp"+str(aspect_index))
+                    self.l2_sum += tf.nn.l2_loss(W)
+                    # [batch_size * sentence]
+                    aspect_rating_score = tf.nn.xw_plus_b(self.prev_output, W, b, name="score_asp")
+                    # scores = tf.reshape(scores, [-1], name="score_a" + str(aspect_index))
+                    print(("aspect_rating_score " + str(aspect_rating_score.get_shape())))
+                    self.rating_scores.append(aspect_rating_score)
 
-        with tf.name_scope("related"):
-            W = tf.get_variable(
-                "W_r",
-                shape=[self.prev_layer_size, self.num_aspects + 1],
-                initializer=tf.contrib.layers.xavier_initializer())
-            b = tf.Variable(tf.constant(0.1, shape=[self.num_aspects + 1]), name="b_r")
-            self.l2_sum += tf.nn.l2_loss(W) * 0.5
-            self.attri_scores = tf.nn.xw_plus_b(self.prev_output, W, b, name="scores_related")
-            # [batch_size * sentence, num_aspects]
-            self.attri_dist = tf.nn.softmax(self.attri_scores, name="softmax_related")
-            print(("self.related_distribution " + str(self.attri_dist.get_shape())))
-
-        # Final (unnormalized) scores and predictions
+        # Final (un-normalized) scores and predictions
         scaled_aspect = []
         with tf.name_scope("output"):
-            for aspect_index in range(1, self.num_aspects + 1):
-                # [batch_size * sentence, num_classes]
-                prob_aspect_sent = tf.tile(tf.expand_dims(self.attri_dist[:, aspect_index], -1),
-                                           [1, self.num_classes])
-
-                aspect_rating = tf.multiply(self.rating_score, prob_aspect_sent,
-                                            name="aspect-" + str(aspect_index) + "-scale")
-                print(("scaled aspect_rating " + str(aspect_index) + " " + str(aspect_rating.get_shape())))
-
-                scaled_aspect.append(aspect_rating)
-
-            # scaled_aspect(6 aspect, ?, 5)
-            scaled_aspect = tf.stack(scaled_aspect, axis=1)
+            scaled_aspect = tf.stack(self.rating_scores, axis=1)
             print(("scaled_aspect " + str(scaled_aspect.get_shape())))
 
             # TODO VERY CAREFUL HERE

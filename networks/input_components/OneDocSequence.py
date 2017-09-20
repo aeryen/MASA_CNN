@@ -1,11 +1,12 @@
 import tensorflow as tf
 
+from data_helpers.Data import DataObject
 
 class OneDocSequence:
 
-    def __init__(self, data):
-        self.document_length = data.document_length
-        self.sequence_length = data.sequence_length
+    def __init__(self, data: DataObject):
+        self.document_length = data.target_doc_len
+        self.sequence_length = data.target_sent_len
         self.num_aspects = data.num_aspects
         self.num_classes = data.num_classes
         self.vocab_size = len(data.vocab)
