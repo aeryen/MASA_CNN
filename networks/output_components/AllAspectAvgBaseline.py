@@ -53,7 +53,7 @@ class AllAspectAvgBaseline(object):
             print(("batch_sent_rating_aspect " + str(batch_sent_rating_aspect.get_shape())))
 
             # [review, 6 aspect, rating]
-            self.scores = tf.reduce_sum(batch_sent_rating_aspect, 1, name="output_scores")
+            self.scores = tf.reduce_mean(batch_sent_rating_aspect, 1, name="output_scores")
             print(("batch_review_aspect_score " + str(self.scores.get_shape())))
 
             # [review, 6 aspect]
