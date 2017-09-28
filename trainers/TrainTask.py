@@ -181,7 +181,7 @@ class TrainTask:
 
         # Generate batches
         batches = DataHelper.batch_iter(list(zip(self.train_data.value, self.train_data.label_instance)),
-                                        self.batch_size, num_epochs=300)
+                                        self.batch_size, num_epochs=300, shuffle=True)
 
         # Training loop. For each batch...
         for batch in batches:

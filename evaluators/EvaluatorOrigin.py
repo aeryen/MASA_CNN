@@ -13,8 +13,8 @@ from data_helpers.DataHelperHotelOne import DataHelperHotelOne
 
 
 class EvaluatorOrigin(Evaluator):
-    def __init__(self, dater):
-        self.dater = dater
+    def __init__(self, data_helper):
+        self.dater = data_helper
         self.test_data = self.dater.get_test_data()
 
     def evaluate(self, experiment_dir, checkpoint_step, doc_acc=True, do_is_training=True):
@@ -88,7 +88,7 @@ if __name__ == "__main__":
 
         # dater = DataHelperHotelOne(embed_dim=300, target_sent_len=1024, target_doc_len=None,
         #                            aspect_id=1, doc_as_sent=True)
-        ev = EvaluatorOrigin(dater=dater)
+        ev = EvaluatorOrigin(data_helper=dater)
 
         ev.evaluate(experiment_dir=experiment_dir,
                     checkpoint_step=step)

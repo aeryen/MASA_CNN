@@ -3,10 +3,13 @@ import logging
 import tensorflow as tf
 
 from utils.ArchiveManager import ArchiveManager
-from data_helpers.DataHelperHotelOne import DataHelperHotelOne
-from evaluators.EvaluatorOrigin import EvaluatorOrigin
 from networks.CNNNetworkBuilder import CNNNetworkBuilder
 from trainers.TrainTask import TrainTask
+
+from data_helpers.DataHelperHotelOne import DataHelperHotelOne
+
+from evaluators.EvaluatorOrigin import EvaluatorOrigin
+from evaluators.EvaluatorMultiAspect import EvaluatorMultiAspect
 
 
 def get_exp_logger(am):
@@ -41,7 +44,7 @@ if __name__ == "__main__":
     data_name = "TripAdvisorDoc"
     input_comp_name = "Document"
     middle_comp_name = "DocumentCNN"
-    output_comp_name = "LSAAC2"
+    output_comp_name = "LSAAC1"
 
     am = ArchiveManager(data_name=data_name, input_name=input_comp_name, middle_name=middle_comp_name, output_name=output_comp_name)
     get_exp_logger(am)
@@ -51,11 +54,11 @@ if __name__ == "__main__":
     if data_name == "TripAdvisor":
         dater = DataHelperHotelOne(embed_dim=300, target_sent_len=512, target_doc_len=None,
                                    aspect_id=1, doc_as_sent=True)
-        ev = EvaluatorOrigin(dater=dater)
+        ev = EvaluatorOrigin(data_helper=dater)
     elif data_name == "TripAdvisorDoc":
-        dater = DataHelperHotelOne(embed_dim=300, target_doc_len=64, target_sent_len=512,
+        dater = DataHelperHotelOne(embed_dim=300, target_doc_len=64, target_sent_len=90,
                                    aspect_id=None, doc_as_sent=False, doc_level=True)
-        ev = EvaluatorOrigin(dater=dater)
+        ev = EvaluatorMultiAspect(data_helper=dater)
     else:
         raise NotImplementedError
 
@@ -64,18 +67,18 @@ if __name__ == "__main__":
         input_comp = CNNNetworkBuilder.get_input_component(input_name=input_comp_name, data=dater.get_train_data())
         middle_comp = CNNNetworkBuilder.get_middle_component(middle_name=middle_comp_name, input_comp=input_comp,
                                                              data=dater.get_train_data(),
-                                                             filter_size_lists=[[3, 4, 5]], num_filters=100,
+                                                             filter_size_lists=[[2, 3, 4, 5]], num_filters=80,
                                                              batch_norm=None, elu=None, fc=[])
         output_comp = CNNNetworkBuilder.get_output_component(output_name=output_comp_name,
                                                              input_comp=input_comp,
                                                              middle_comp=middle_comp,
-                                                             data=dater.get_train_data(), l2_reg=0.2)
+                                                             data=dater.get_train_data(), l2_reg=0.1, fc=[128])
 
         tt = TrainTask(data_helper=dater, am=am,
                        input_component=input_comp,
                        middle_component=middle_comp,
                        output_component=output_comp,
-                       batch_size=1, total_step=20000, evaluate_every=500, checkpoint_every=1000, max_to_keep=6,
+                       batch_size=32, total_step=10000, evaluate_every=500, checkpoint_every=1000, max_to_keep=6,
                        restore_path=None)
 
         start = timer()

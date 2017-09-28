@@ -54,48 +54,27 @@ class EvaluatorMultiAspect(Evaluator):
                 dropout_keep_prob = graph.get_operation_by_name("dropout_keep_prob").outputs[0]
 
                 g_output_scores = graph.get_operation_by_name("output/output_scores").outputs[0]
-                g_softmax_related = graph.get_operation_by_name("related/softmax_related").outputs[0]
 
                 # Generate batches for one epoch
-                x_batches = DataHelper.batch_iter(self.test_data.value, 16, 1, shuffle=False)
-                y_batches = DataHelper.batch_iter(self.test_data.label_instance, 16, 1, shuffle=False)
+                x_batches = DataHelper.batch_iter(self.test_data.value, 32, 1, shuffle=False)
+                y_batches = DataHelper.batch_iter(self.test_data.label_instance, 32, 1, shuffle=False)
 
                 # Collect the predictions here
                 all_rating_score = []
-                all_aspect_dist = []
                 for x_test_batch, y_test_batch in zip(x_batches, y_batches):
-                    [o_output_scores, o_softmax_related] = sess.run([g_output_scores, g_softmax_related],
+                    [o_output_scores] = sess.run([g_output_scores],
                                                                     {input_x: x_test_batch, input_y: y_test_batch,
                                                                      dropout_keep_prob: 1.0})
                     # [reviews aspects scores]
                     all_rating_score.append(o_output_scores)
-                    all_aspect_dist.append(o_softmax_related)
 
                 all_rating_score = np.concatenate(all_rating_score, axis=0)
-                all_aspect_dist = np.concatenate(all_aspect_dist, axis=0)
-
-                clean_aspect_dist = []
-                for i in range(self.test_data.num_instance):
-                    clean_aspect_dist.append(
-                        all_aspect_dist[i * self.test_data.target_doc_len:
-                                        i * self.test_data.target_doc_len + self.test_data.doc_size_trim[i]])
-                clean_aspect_dist = np.concatenate(clean_aspect_dist, axis=0)
 
                 rating_pred = np.argmax(all_rating_score, axis=2)
                 rating_true = np.argmax(self.test_data.label_instance, axis=2)
-                clean_aspect_max = np.argmax(clean_aspect_dist, axis=1)
-
-                sentence_aspect_names = [aspect_name[i] for i in clean_aspect_max]
 
         with open(experiment_dir + '/aspect_rating.out', 'wb') as f:
             np.savetxt(f, rating_pred, fmt='%d', delimiter='\t')
-        with open(experiment_dir + '/spect_dist.out', 'wb') as f:
-            np.savetxt(f, clean_aspect_dist, fmt='%1.5f', delimiter='\t')
-        # np.savetxt(experiment_dir + '/aspect_related.out', clean_aspect_max, fmt='%1.0f')
-
-        with open(experiment_dir + '/aspect_related_name.out', 'w') as aspect_name_file:
-            for item in sentence_aspect_names:
-                aspect_name_file.write("%s\n" % item)
 
         logging.info("Total number of OUTPUT instances: " + str(len(rating_pred)))
         for aspect_index in range(self.test_data.num_aspects):
@@ -112,8 +91,8 @@ class EvaluatorMultiAspect(Evaluator):
 
 if __name__ == "__main__":
     experiment_dir = "E:\\Research\\Paper 02\\MASA_CNN\\runs\\" \
-                     "TripAdvisorDoc_Document_DocumentCNN_LSAAC2\\170920_1505962339\\"
-    checkpoint_steps = [9000,10000,11000,12000,13000,14000]
+                     "TripAdvisorDoc_Document_DocumentCNN_AAAB\\170925_1506394533\\"
+    checkpoint_steps = [3000, 4000, 5000, 6000, 7000, 8000]
 
     dater = DataHelperHotelOne(embed_dim=300, target_doc_len=64, target_sent_len=90,
                                aspect_id=None, doc_as_sent=False, doc_level=True)

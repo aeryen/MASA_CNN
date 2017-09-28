@@ -4,12 +4,13 @@ import logging
 from data_helpers.Data import DataObject
 
 
-class LSAAC2Output(object):
+class LSAAC1Output(object):
     def __init__(self, input_comp, prev_comp, data: DataObject, l2_reg_lambda, fc=[]):
         self.label = input_comp.input_y
         self.s_count = input_comp.input_s_count
         self.prev_layer = prev_comp.last_layer
-        self.prev_layer_size = self.prev_layer.get_shape()[-1].value
+        self.sentence_feature_size = self.prev_layer.get_shape()[-1].value
+        self.review_feature_size = data.target_doc_len * self.sentence_feature_size
 
         self.document_length = data.target_doc_len
         self.num_aspects = data.num_aspects
@@ -21,29 +22,60 @@ class LSAAC2Output(object):
         else:
             self.l2_sum = tf.constant(0.0)
 
-        self.prev_layer = tf.reshape(self.prev_layer, [-1, self.prev_layer_size],
-                                       name="sentence_features")
+        self.sent_features = tf.reshape(self.prev_layer, [-1, self.sentence_feature_size],
+                                        name="sentence_features")
+        self.review_features = tf.reshape(self.prev_layer, [-1, self.review_feature_size],
+                                          name="review_features")
         # per sentence score
         self.rating_score = []
         with tf.name_scope("rating-score"):
-            if fc:
-                Wh = tf.get_variable(
-                    "rating_Wh",
-                    shape=[self.prev_layer.get_shape()[-1].value, fc[0]],
+            with tf.name_scope("overall"):
+                if fc:
+                    Wh_overall = tf.get_variable(
+                        "overall_Wh",
+                        shape=[self.review_feature_size, fc[0]],
+                        initializer=tf.contrib.layers.xavier_initializer())
+                    bh_overall = tf.Variable(tf.constant(0.1, shape=[fc[0]]), name="bh")
+                    self.l2_sum += tf.nn.l2_loss(Wh_overall)
+
+                    self.overall_hid_layer = tf.nn.xw_plus_b(self.review_features, Wh_overall, bh_overall, name="overall_hid")
+                    self.overall_hid_layer = tf.nn.elu(self.overall_hid_layer, name='overall_hid_elu')
+
+                    self.overall_hidden_feature_size = fc[0]
+                else:
+                    self.overall_hid_layer = self.review_features
+                    self.overall_hidden_feature_size = self.review_feature_size
+                W_overall = tf.get_variable(
+                    "W_all",
+                    shape=[self.overall_hidden_feature_size, self.num_classes],
                     initializer=tf.contrib.layers.xavier_initializer())
-                bh = tf.Variable(tf.constant(0.1, shape=[fc[0]]), name="bh")
-                self.l2_sum += tf.nn.l2_loss(Wh)
-
-                self.rating_layer = tf.nn.xw_plus_b(self.prev_layer, Wh, bh, name="rating_hid")
-                self.rating_layer = tf.nn.elu(self.rating_layer, name='rating_hid_elu')
-
-                self.prev_layer_size = fc[0]
-            else:
-                self.rating_layer = self.prev_layer
+                b_overall = tf.Variable(tf.constant(0.1, shape=[self.num_classes]), name="b_all")
+                self.l2_sum += tf.nn.l2_loss(W_overall)
+                # overall_scores.shape = [review, 5]
+                self.overall_scores = tf.nn.xw_plus_b(self.overall_hid_layer, W_overall, b_overall, name="scores_all")
+                print("self.overall_scores " + str(self.overall_scores.get_shape()))
+                self.overall_distribution = tf.nn.softmax(self.overall_scores, name="dist_all")
+                print("self.overall_distribution : " + str(self.overall_distribution.get_shape()))
             with tf.name_scope("aspect"):
+                if fc:
+                    Wh = tf.get_variable(
+                        "rating_Wh",
+                        shape=[self.sentence_feature_size, fc[0]],
+                        initializer=tf.contrib.layers.xavier_initializer())
+                    bh = tf.Variable(tf.constant(0.1, shape=[fc[0]]), name="bh")
+                    self.l2_sum += tf.nn.l2_loss(Wh)
+
+                    self.rating_layer = tf.nn.xw_plus_b(self.sent_features, Wh, bh, name="rating_hid")
+                    self.rating_layer = tf.nn.elu(self.rating_layer, name='rating_hid_elu')
+
+                    self.hidden_feature_size = fc[0]
+                else:
+                    self.rating_layer = self.sent_features
+                    self.hidden_feature_size = self.sentence_feature_size
+
                 W = tf.get_variable(
                     "W_asp",
-                    shape=[self.prev_layer_size, self.num_classes],
+                    shape=[self.hidden_feature_size, self.num_classes],
                     initializer=tf.contrib.layers.xavier_initializer())
                 b = tf.Variable(tf.constant(0.1, shape=[self.num_classes]), name="b_asp")
                 self.l2_sum += tf.nn.l2_loss(W)
@@ -55,23 +87,25 @@ class LSAAC2Output(object):
         with tf.name_scope("related"):
             if fc:
                 Wh = tf.get_variable(
-                    "reslated_Wh",
-                    shape=[self.prev_layer.get_shape()[-1].value, fc[0]],
+                    "related_Wh",
+                    shape=[self.sentence_feature_size, fc[0]],
                     initializer=tf.contrib.layers.xavier_initializer())
                 bh = tf.Variable(tf.constant(0.1, shape=[fc[0]]), name="bh")
                 self.l2_sum += tf.nn.l2_loss(Wh)
 
-                self.aspect_layer = tf.nn.xw_plus_b(self.prev_layer, Wh, bh, name="relate_hid")
+                self.aspect_layer = tf.nn.xw_plus_b(self.sent_features, Wh, bh, name="relate_hid")
                 self.aspect_layer = tf.nn.elu(self.aspect_layer, name='relate_hid_elu')
 
-                self.prev_layer_size = fc[0]
+                self.hidden_feature_size = fc[0]
             else:
-                self.aspect_layer = self.prev_layer
+                self.aspect_layer = self.sent_features
+                self.hidden_feature_size = self.sentence_feature_size
+
             W = tf.get_variable(
                 "W_r",
-                shape=[self.prev_layer_size, self.num_aspects + 1],
+                shape=[self.hidden_feature_size, self.num_aspects],
                 initializer=tf.contrib.layers.xavier_initializer())
-            b = tf.Variable(tf.constant(0.1, shape=[self.num_aspects + 1]), name="b_r")
+            b = tf.Variable(tf.constant(0.1, shape=[self.num_aspects]), name="b_r")
             self.l2_sum += tf.nn.l2_loss(W) * 0.5
             self.attri_scores = tf.nn.xw_plus_b(self.aspect_layer, W, b, name="scores_related")
             # [batch_size * sentence, num_aspects]
@@ -81,7 +115,7 @@ class LSAAC2Output(object):
         # Final (unnormalized) scores and predictions
         scaled_aspect = []
         with tf.name_scope("output"):
-            for aspect_index in range(1, self.num_aspects + 1):
+            for aspect_index in range(1, self.num_aspects):
                 # [batch_size * sentence, num_classes]
                 prob_aspect_sent = tf.tile(tf.expand_dims(self.attri_dist[:, aspect_index], -1),
                                            [1, self.num_classes])
@@ -92,19 +126,21 @@ class LSAAC2Output(object):
 
                 scaled_aspect.append(aspect_rating)
 
-            # scaled_aspect(6 aspect, ?, 5)
             scaled_aspect = tf.stack(scaled_aspect, axis=1)
             print(("scaled_aspect " + str(scaled_aspect.get_shape())))
 
             # TODO VERY CAREFUL HERE
             batch_sent_rating_aspect = tf.reshape(scaled_aspect, [-1, self.document_length,
-                                                                  self.num_aspects, self.num_classes],
-                                                  name="output_score")
+                                                                  self.num_aspects - 1, self.num_classes],
+                                                  name="sentence_aspect_score")
             print(("batch_sent_rating_aspect " + str(batch_sent_rating_aspect.get_shape())))
 
             # [review, 6 aspect, rating]
-            self.scores = tf.reduce_sum(batch_sent_rating_aspect, 1, name="output_scores")
-            print(("batch_review_aspect_score " + str(self.scores.get_shape())))
+            self.aspect_scores = tf.reduce_sum(batch_sent_rating_aspect, 1, name="review_aspect_score")
+            print(("batch_review_aspect_score " + str(self.aspect_scores.get_shape())))
+
+            self.scores = tf.concat([tf.expand_dims(self.overall_scores, axis=1), self.aspect_scores], axis=1,
+                                    name="output_scores")
 
             # [review, 6 aspect]
             self.predictions = tf.argmax(self.scores, 2, name="output_value")

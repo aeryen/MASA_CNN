@@ -121,15 +121,18 @@ class DataHelper(object):
             print(("longest doc: " + str(max_length)))
 
         padded_sents = []
+        cut_count = 0
         for sent in data.value:
             if len(sent) <= max_length:
                 num_padding = max_length - len(sent)
                 new_sentence = np.concatenate([sent, np.zeros(num_padding, dtype=np.int)])
             else:
                 new_sentence = sent[:max_length]
-
+                cut_count += 1
             padded_sents.append(new_sentence)
         data.value = np.array(padded_sents)
+        logging.info(str(cut_count) + " of " + str(len(data.value)) + " sentences are cut. which is " +
+                     str(cut_count/float(len(data.value))))
         return data
 
     @staticmethod
@@ -145,6 +148,7 @@ class DataHelper(object):
         padded_doc = []
         trim_len = []
         sent_length = len(docs[0][0])
+        cut_count = 0
         for i in range(len(docs)):
             d = docs[i]
             if len(d) <= tar_length:
@@ -157,9 +161,13 @@ class DataHelper(object):
             else:
                 new_doc = d[:tar_length]
                 trim_len.append(tar_length)
+                cut_count += 1
+
             padded_doc.append(new_doc)
         data.value = np.array(padded_doc)
         data.doc_size_trim = np.array(trim_len)
+        logging.info(str(cut_count) + " of " + str(len(data.value)) + " documents are cut. which is " +
+                     str(cut_count/float(len(data.value))))
         return data
 
     @staticmethod

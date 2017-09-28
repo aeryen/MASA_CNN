@@ -35,7 +35,6 @@ class DataHelperHotelOne(DataHelper):
 
         aspect_id should be 0 1 2 3 4 5
         """
-
         sent_count = list(open(self.dataset_dir + self.sent_num_file[load_test], "r").readlines())
         sent_count = [int(s) for s in sent_count if (len(s) > 0 and s != "\n")]
 

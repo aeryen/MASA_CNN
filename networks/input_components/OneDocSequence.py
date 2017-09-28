@@ -2,6 +2,7 @@ import tensorflow as tf
 
 from data_helpers.Data import DataObject
 
+
 class OneDocSequence:
 
     def __init__(self, data: DataObject):

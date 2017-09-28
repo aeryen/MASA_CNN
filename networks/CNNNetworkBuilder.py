@@ -9,6 +9,7 @@ from networks.middle_components.DocumentCNN import DocumentCNN
 from networks.middle_components.SentenceCNN import SentenceCNN
 
 from networks.output_components.OriginOutput import OriginOutput
+from networks.output_components.LSAAC1Output import LSAAC1Output
 from networks.output_components.LSAAC2Output import LSAAC2Output
 from networks.output_components.AllAspectAvgBaseline import AllAspectAvgBaseline
 
@@ -61,7 +62,7 @@ class CNNNetworkBuilder:
         logging.info("setting: %s is %s", "num_filters", num_filters)
         logging.info("setting: %s is %s", "batch_norm", batch_norm)
         logging.info("setting: %s is %s", "elu", elu)
-        logging.info("setting: %s is %s", "fc", fc)
+        logging.info("setting: %s is %s", "MIDDLE_FC", fc)
 
         if middle_name == 'Origin':
             middle_comp = SentenceCNN(prev_comp=input_comp, data=data,
@@ -79,13 +80,18 @@ class CNNNetworkBuilder:
         return middle_comp
 
     @staticmethod
-    def get_output_component(output_name, input_comp, middle_comp, data, l2_reg=0.0):
+    def get_output_component(output_name, input_comp, middle_comp, data, l2_reg=0.0, fc=[]):
         logging.info("setting: %s is %s", "l2_reg", l2_reg)
+        logging.info("setting: %s is %s", "OUTPUT_FC", fc)
 
         if "OriginOutput" in output_name:
             output_comp = OriginOutput(input_comp=input_comp, prev_comp=middle_comp, data=data, l2_reg_lambda=l2_reg)
+        elif "LSAAC1" in output_name:
+            output_comp = LSAAC1Output(input_comp=input_comp, prev_comp=middle_comp, data=data,
+                                       l2_reg_lambda=l2_reg, fc=fc)
         elif "LSAAC2" in output_name:
-            output_comp = LSAAC2Output(input_comp=input_comp, prev_comp=middle_comp, data=data, l2_reg_lambda=l2_reg)
+            output_comp = LSAAC2Output(input_comp=input_comp, prev_comp=middle_comp, data=data,
+                                       l2_reg_lambda=l2_reg, fc=fc)
         elif "AAAB" in output_name:
             output_comp = AllAspectAvgBaseline(input_comp=input_comp, prev_comp=middle_comp, data=data, l2_reg_lambda=l2_reg)
         else:

@@ -28,7 +28,7 @@ class AllAspectAvgBaseline(object):
         self.rating_scores = []
         with tf.name_scope("rating-score"):
             with tf.name_scope("aspect"):
-                for aspect_index in range(1, self.num_aspects):
+                for aspect_index in range(0, self.num_aspects):
                     W = tf.get_variable(
                         "W_asp"+str(aspect_index),
                         shape=[self.prev_layer_size, self.num_classes],
@@ -42,7 +42,6 @@ class AllAspectAvgBaseline(object):
                     self.rating_scores.append(aspect_rating_score)
 
         # Final (un-normalized) scores and predictions
-        scaled_aspect = []
         with tf.name_scope("output"):
             scaled_aspect = tf.stack(self.rating_scores, axis=1)
             print(("scaled_aspect " + str(scaled_aspect.get_shape())))
