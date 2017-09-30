@@ -5,8 +5,9 @@ from data_helpers.Data import DataObject
 from networks.input_components.OneDocSequence import OneDocSequence
 from networks.input_components.OneSequence import OneSequence
 
-from networks.middle_components.DocumentCNN import DocumentCNN
 from networks.middle_components.SentenceCNN import SentenceCNN
+from networks.middle_components.DocumentCNN import DocumentCNN
+from networks.middle_components.DocumentGRU import DocumentGRU
 
 from networks.output_components.OriginOutput import OriginOutput
 from networks.output_components.LSAAC1Output import LSAAC1Output
@@ -72,6 +73,10 @@ class CNNNetworkBuilder:
         elif middle_name == "DocumentCNN":
             middle_comp = DocumentCNN(prev_comp=input_comp, data=data,
                                       filter_size_lists=filter_size_lists, num_filters=num_filters,
+                                      batch_normalize=batch_norm, elu=elu,
+                                      fc=fc)
+        elif middle_name == "DocumentGRU":
+            middle_comp = DocumentGRU(prev_comp=input_comp, data=data,
                                       batch_normalize=batch_norm, elu=elu,
                                       fc=fc)
         else:

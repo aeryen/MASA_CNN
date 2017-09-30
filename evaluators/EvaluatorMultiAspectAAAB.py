@@ -16,7 +16,7 @@ from data_helpers.DataHelperHotelOne import DataHelperHotelOne
 aspect_name = ["Other", "All", "Value", "Room", "Location", "Cleanliness", "Service"]
 
 
-class EvaluatorMultiAspect(Evaluator):
+class EvaluatorMultiAspectAAAB(Evaluator):
     def __init__(self, data_helper: DataHelper):
         self.data_helper = data_helper
         self.test_data = self.data_helper.get_test_data()

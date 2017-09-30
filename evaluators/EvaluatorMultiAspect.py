@@ -78,7 +78,7 @@ class EvaluatorMultiAspect(Evaluator):
                 for i in range(self.test_data.num_instance):
                     clean_aspect_dist.append(
                         all_aspect_dist[i * self.test_data.target_doc_len:
-                                        i * self.test_data.target_doc_len + self.test_data.doc_size_trim[i]])
+                        i * self.test_data.target_doc_len + self.test_data.doc_size_trim[i]])
                 clean_aspect_dist = np.concatenate(clean_aspect_dist, axis=0)
 
                 rating_pred = np.argmax(all_rating_score, axis=2)
@@ -112,8 +112,8 @@ class EvaluatorMultiAspect(Evaluator):
 
 if __name__ == "__main__":
     experiment_dir = "E:\\Research\\Paper 02\\MASA_CNN\\runs\\" \
-                     "TripAdvisorDoc_Document_DocumentCNN_LSAAC2\\170920_1505962339\\"
-    checkpoint_steps = [9000,10000,11000,12000,13000,14000]
+                     "TripAdvisorDoc_Document_DocumentCNN_LSAAC1\\170929_1506661325\\"
+    checkpoint_steps = [2500, 3000, 3500, 4000, 4500, 5000]
 
     dater = DataHelperHotelOne(embed_dim=300, target_doc_len=64, target_sent_len=90,
                                aspect_id=None, doc_as_sent=False, doc_level=True)
