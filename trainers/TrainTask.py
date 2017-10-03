@@ -129,6 +129,8 @@ class TrainTask:
                 train_op = optimizer.apply_gradients(grads_and_vars, global_step=global_step)
         else:
             optimizer = tf.train.AdamOptimizer(1e-3)
+            # optimizer = tf.train.GradientDescentOptimizer(learning_rate=1e-3)
+            # logging.info("USING GDO INSTEAD OF ADAM")
             tf.trainable_variables()
             grads_and_vars = optimizer.compute_gradients(graph_loss)
             train_op = optimizer.apply_gradients(grads_and_vars, global_step=global_step)
@@ -191,7 +193,8 @@ class TrainTask:
             current_step = tf.train.global_step(sess, global_step)
             if current_step % self.evaluate_every == 0:
                 print("\nEvaluation:")
-                dev_batches = DataHelper.batch_iter(list(zip(self.test_data.value, self.test_data.label_instance)), self.batch_size, 1)
+                dev_batches = DataHelper.batch_iter(list(zip(self.test_data.value, self.test_data.label_instance)),
+                                                    self.batch_size * 2, 1)
                 for dev_batch in dev_batches:
                     if len(dev_batch) > 0:
                         small_dev_x, small_dev_y = list(zip(*dev_batch))

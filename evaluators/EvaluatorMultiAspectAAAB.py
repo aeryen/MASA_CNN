@@ -91,8 +91,8 @@ class EvaluatorMultiAspectAAAB(Evaluator):
 
 if __name__ == "__main__":
     experiment_dir = "E:\\Research\\Paper 02\\MASA_CNN\\runs\\" \
-                     "TripAdvisorDoc_Document_DocumentCNN_AAAB\\170925_1506394533\\"
-    checkpoint_steps = [3000, 4000, 5000, 6000, 7000, 8000]
+                     "TripAdvisorDoc_Document_DocumentGRU_AAAB\\171001_1506904416\\"
+    checkpoint_steps = [10000, 11000, 12000, 13000, 14000, 15000]
 
     dater = DataHelperHotelOne(embed_dim=300, target_doc_len=64, target_sent_len=90,
                                aspect_id=None, doc_as_sent=False, doc_level=True)
@@ -100,5 +100,5 @@ if __name__ == "__main__":
     for step in checkpoint_steps:
         # dater = DataHelperHotelOne(embed_dim=300, target_sent_len=1024, target_doc_len=None,
         #                            aspect_id=1, doc_as_sent=True)
-        ev = EvaluatorMultiAspect(data_helper=dater)
+        ev = EvaluatorMultiAspectAAAB(data_helper=dater)
         ev.evaluate(experiment_dir=experiment_dir, checkpoint_step=step)

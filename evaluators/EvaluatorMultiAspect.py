@@ -112,8 +112,8 @@ class EvaluatorMultiAspect(Evaluator):
 
 if __name__ == "__main__":
     experiment_dir = "E:\\Research\\Paper 02\\MASA_CNN\\runs\\" \
-                     "TripAdvisorDoc_Document_DocumentCNN_LSAAC1\\170929_1506661325\\"
-    checkpoint_steps = [2500, 3000, 3500, 4000, 4500, 5000]
+                     "TripAdvisorDoc_Document_DocumentGRU_LSAAC1\\170930_1506786910\\"
+    checkpoint_steps = [5000, 6000, 7000, 8000, 9000, 10000]
 
     dater = DataHelperHotelOne(embed_dim=300, target_doc_len=64, target_sent_len=90,
                                aspect_id=None, doc_as_sent=False, doc_level=True)

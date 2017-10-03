@@ -46,7 +46,7 @@ if __name__ == "__main__":
     data_name = "TripAdvisorDoc"
     input_comp_name = "Document"
     middle_comp_name = "DocumentGRU"
-    output_comp_name = "LSAAC1"
+    output_comp_name = "AAAB"
 
     am = ArchiveManager(data_name=data_name, input_name=input_comp_name, middle_name=middle_comp_name, output_name=output_comp_name)
     get_exp_logger(am)
@@ -58,7 +58,7 @@ if __name__ == "__main__":
                                    aspect_id=1, doc_as_sent=True)
         ev = EvaluatorOrigin(data_helper=dater)
     elif data_name == "TripAdvisorDoc":
-        dater = DataHelperHotelOne(embed_dim=300, target_doc_len=64, target_sent_len=90,
+        dater = DataHelperHotelOne(embed_dim=100, target_doc_len=64, target_sent_len=90,
                                    aspect_id=None, doc_as_sent=False, doc_level=True)
         if output_comp_name != "AAAB":
             ev = EvaluatorMultiAspect(data_helper=dater)
@@ -77,7 +77,7 @@ if __name__ == "__main__":
         output_comp = CNNNetworkBuilder.get_output_component(output_name=output_comp_name,
                                                              input_comp=input_comp,
                                                              middle_comp=middle_comp,
-                                                             data=dater.get_train_data(), l2_reg=0.5, fc=[])
+                                                             data=dater.get_train_data(), l2_reg=0.3, fc=[])
 
         tt = TrainTask(data_helper=dater, am=am,
                        input_component=input_comp,
