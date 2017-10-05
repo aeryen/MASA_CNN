@@ -14,7 +14,7 @@ class DocumentGRU(object):
 
     def __init__(
             self, prev_comp, data: DataObject,
-            batch_normalize=False, elu=False, fc=[]):
+            batch_normalize=False, elu=False, hidden_state_dim=128, fc=[]):
 
         self.dropout = prev_comp.dropout_keep_prob
         self.prev_output = prev_comp.last_layer
@@ -29,13 +29,18 @@ class DocumentGRU(object):
         self.is_training = tf.placeholder(tf.bool, name='is_training')
         self.l2_sum = tf.constant(0.0)
 
+        self.hidden_state_dim = hidden_state_dim
         self.sent_embedding = tf.reshape(self.prev_output, [-1, self.sequence_length, self.embedding_dim],
                                          name="sent_embed")
 
+        self.input_s_len = tf.reshape(prev_comp.input_s_len, [-1], name="s_len_flatten")
+
         with tf.name_scope("rnn"):
-            word_list = tf.unstack(self.sent_embedding, axis=1)
-            cell = tf.contrib.rnn.GRUCell(self.embedding_dim)
-            _, encoding = tf.contrib.rnn.static_rnn(cell=cell, inputs=word_list, dtype=tf.float32)
+            # word_list = tf.unstack(self.sent_embedding, axis=1)
+            cell = tf.contrib.rnn.GRUCell(self.hidden_state_dim)
+            _, encoding = tf.nn.dynamic_rnn(cell=cell, inputs=self.sent_embedding,
+                                            sequence_length=self.input_s_len,
+                                            dtype=tf.float32)
             # Apply nonlinearity
             # h = tf.nn.relu(tf.nn.bias_add(conv, b), name="relu")
             # Max-pooling over the outputs
@@ -45,7 +50,7 @@ class DocumentGRU(object):
             # [batch_size * sentence, num_filters_total]
             # self.last_layer = tf.nn.dropout(encoding, self.dropout, name="h_drop_sentence")
             # [batch_size, sentence * num_filters_total]
-            self.last_layer = tf.reshape(encoding, [-1, self.document_length, self.embedding_dim],
+            self.last_layer = tf.reshape(encoding, [-1, self.document_length, self.hidden_state_dim],
                                          name="h_drop_review")
 
     def get_last_layer_info(self):

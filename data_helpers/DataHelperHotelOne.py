@@ -6,7 +6,6 @@ from data_helpers.Data import DataObject
 
 
 class DataHelperHotelOne(DataHelper):
-
     sent_num_file = ["aspect_0.count", "test_aspect_0.count"]
     rating_file = ["aspect_0.rating", "test_aspect_0.rating"]
     content_file = ["aspect_0.txt", "test_aspect_0.txt"]
@@ -53,31 +52,37 @@ class DataHelperHotelOne(DataHelper):
         train_content = list(open(self.dataset_dir + self.content_file[load_test], "r").readlines())
         train_content = [s.strip() for s in train_content]
         # Split by words
-        x_text = [self.clean_str(sent) for sent in train_content]
+        x_text = [self.old_clean_str(sent) for sent in train_content]
 
         if self.doc_as_sent:
             x_text = DataHelperHotelOne.concat_to_doc(sent_list=x_text, sent_count=sent_count)
 
-        x = []
-        for train_line_index in range(len(x_text)):
-            tokens = x_text[train_line_index].split()
-            x.append(tokens)
+        x_text = [x.split() for x in x_text]
+        s_len = np.array([len(x) for x in x_text], dtype=np.int32)
 
         data = DataObject(self.problem_name, len(y))
-        data.raw = x
+        data.raw = x_text
+        data.sentence_len = s_len
         data.label_doc = y_onehot
         data.doc_size = sent_count
 
         return data
 
-    def to_list_of_sent(self, sentence_data, sentence_count):
+    def to_list_of_sent(self, data: DataObject):
+        sentence_data = data.value
+        sentence_count = data.doc_size
         x = []
+        s_len_trim = []
         index = 0
         for sc in sentence_count:
-            one_review = sentence_data[index:index+sc]
+            one_review = sentence_data[index:index + sc]
             x.append(one_review)
+            one_review_s_len = data.sentence_len_trim[index:index + sc]
+            s_len_trim.append(one_review_s_len)
             index += sc
-        return np.array(x)
+        data.value = np.array(x)
+        data.sentence_len_trim = np.array(s_len_trim)
+        return data
 
     def load_all_data(self):
         train_data = self.load_files(0)
@@ -87,9 +92,9 @@ class DataHelperHotelOne(DataHelper):
         train_data = self.pad_sentences(train_data)
 
         if self.doc_level:
-            value = self.to_list_of_sent(train_data.value, train_data.doc_size)
-            train_data.value = value
-            DataHelper.pad_document(train_data, self.target_doc_len)
+            train_data = self.to_list_of_sent(train_data)
+            DataHelper.pad_document(data=train_data,
+                                    target_doc_len=self.target_doc_len, target_sent_len=self.target_sent_len)
 
         self.train_data = train_data
         self.train_data.target_doc_len = self.target_doc_len
@@ -106,9 +111,9 @@ class DataHelperHotelOne(DataHelper):
         test_data = self.pad_sentences(test_data)
 
         if self.doc_level:
-            value = self.to_list_of_sent(test_data.value, test_data.doc_size)
-            test_data.value = value
-            DataHelper.pad_document(test_data, self.target_doc_len)
+            test_data = self.to_list_of_sent(test_data)
+            DataHelper.pad_document(data=test_data,
+                                    target_doc_len=self.target_doc_len, target_sent_len=self.target_sent_len)
 
         self.test_data = test_data
         self.test_data.target_doc_len = self.target_doc_len
@@ -122,5 +127,5 @@ class DataHelperHotelOne(DataHelper):
 
 
 if __name__ == "__main__":
-    a = DataHelperHotelOne(embed_dim=300, target_doc_len=64, target_sent_len=90, aspect_id=None,
+    a = DataHelperHotelOne(embed_dim=300, target_doc_len=64, target_sent_len=65, aspect_id=None,
                            doc_as_sent=False, doc_level=True)

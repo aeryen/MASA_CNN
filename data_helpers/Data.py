@@ -13,6 +13,9 @@ class DataObject:
         self.label_doc = None
         self.label_instance = None  # this is for sentences or comb or paragraph
 
+        self.sentence_len = None
+        self.sentence_len_trim = None
+
         self.doc_size = None
         self.doc_size_trim = None
 

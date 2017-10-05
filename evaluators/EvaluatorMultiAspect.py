@@ -14,6 +14,7 @@ import utils.ArchiveManager as AM
 from data_helpers.DataHelperHotelOne import DataHelperHotelOne
 
 aspect_name = ["Other", "All", "Value", "Room", "Location", "Cleanliness", "Service"]
+# aspect_name = ["Other", "All", "Value", "Room", "Location", "Cleanliness", "Service"]
 
 
 class EvaluatorMultiAspect(Evaluator):
@@ -112,10 +113,10 @@ class EvaluatorMultiAspect(Evaluator):
 
 if __name__ == "__main__":
     experiment_dir = "E:\\Research\\Paper 02\\MASA_CNN\\runs\\" \
-                     "TripAdvisorDoc_Document_DocumentGRU_LSAAC1\\170930_1506786910\\"
-    checkpoint_steps = [5000, 6000, 7000, 8000, 9000, 10000]
+                     "TripAdvisorDoc_Document_DocumentGRU_LSAAC2\\171003_1507014138\\"
+    checkpoint_steps = [68000, 69000, 70000, 71000, 72000, 73000]
 
-    dater = DataHelperHotelOne(embed_dim=300, target_doc_len=64, target_sent_len=90,
+    dater = DataHelperHotelOne(embed_dim=300, target_doc_len=100, target_sent_len=64,
                                aspect_id=None, doc_as_sent=False, doc_level=True)
 
     for step in checkpoint_steps:

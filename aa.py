@@ -58,7 +58,7 @@ if __name__ == "__main__":
                                    aspect_id=1, doc_as_sent=True)
         ev = EvaluatorOrigin(data_helper=dater)
     elif data_name == "TripAdvisorDoc":
-        dater = DataHelperHotelOne(embed_dim=100, target_doc_len=64, target_sent_len=90,
+        dater = DataHelperHotelOne(embed_dim=300, target_doc_len=100, target_sent_len=64,
                                    aspect_id=None, doc_as_sent=False, doc_level=True)
         if output_comp_name != "AAAB":
             ev = EvaluatorMultiAspect(data_helper=dater)
@@ -83,7 +83,7 @@ if __name__ == "__main__":
                        input_component=input_comp,
                        middle_component=middle_comp,
                        output_component=output_comp,
-                       batch_size=32, total_step=30000, evaluate_every=500, checkpoint_every=1000, max_to_keep=6,
+                       batch_size=32, total_step=10000, evaluate_every=500, checkpoint_every=1000, max_to_keep=6,
                        restore_path=None)
 
         start = timer()

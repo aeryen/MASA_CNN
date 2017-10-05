@@ -17,6 +17,7 @@ class OneDocSequence:
         # Placeholders for input, output and dropout, First None is batch size.
         self.input_x = tf.placeholder(tf.int32, [None, self.document_length, self.sequence_length], name="input_x")
         self.input_y = tf.placeholder(tf.float32, [None, self.num_aspects, self.num_classes], name="input_y")
+        self.input_s_len = tf.placeholder(tf.float32, [None, self.document_length], name="input_s_len")
         self.input_s_count = tf.placeholder(tf.float32, [None], name="input_s_count")
         self.dropout_keep_prob = tf.placeholder(tf.float32, name="dropout_keep_prob")
 

@@ -113,6 +113,7 @@ class TrainTask:
             graph_input_x = cnn.input_x
             graph_input_y = cnn.input_y
             graph_drop_keep = cnn.dropout_keep_prob
+            graph_s_len = cnn.input_s_len
             graph_is_train = cnn.is_training
             aspect_accuracy = cnn.aspect_accuracy
         else:
@@ -152,10 +153,11 @@ class TrainTask:
         if self.restore_dir is None:
             sess.run(tf.global_variables_initializer())
 
-        def train_step(x_batch, y_batch):
+        def train_step(x_batch, y_batch, s_len_batch):
             feed_dict = {
                 graph_input_x: x_batch,
                 graph_input_y: y_batch,
+                graph_s_len: s_len_batch,
                 graph_drop_keep: dropout_keep_prob,
                 graph_is_train: 1
             }
@@ -167,10 +169,11 @@ class TrainTask:
             if step % 5 == 0:
                 self.train_summary_writer.add_summary(summaries, step)
 
-        def dev_step(x_batch, y_batch):
+        def dev_step(x_batch, y_batch, s_len_batch):
             feed_dict = {
                 graph_input_x: x_batch,
                 graph_input_y: y_batch,
+                graph_s_len: s_len_batch,
                 graph_drop_keep: 1,
                 graph_is_train: 0
             }
@@ -182,23 +185,25 @@ class TrainTask:
             self.dev_summary_writer.add_summary(summaries, step)
 
         # Generate batches
-        batches = DataHelper.batch_iter(list(zip(self.train_data.value, self.train_data.label_instance)),
+        batches = DataHelper.batch_iter(list(zip(self.train_data.value, self.train_data.label_instance,
+                                                 self.train_data.sentence_len_trim)),
                                         self.batch_size, num_epochs=300, shuffle=True)
 
         # Training loop. For each batch...
         for batch in batches:
-            x_batch, y_batch = list(zip(*batch))
-            train_step(x_batch, y_batch)
+            x_batch, y_batch, s_len_batch = list(zip(*batch))
+            train_step(x_batch, y_batch, s_len_batch)
 
             current_step = tf.train.global_step(sess, global_step)
             if current_step % self.evaluate_every == 0:
                 print("\nEvaluation:")
-                dev_batches = DataHelper.batch_iter(list(zip(self.test_data.value, self.test_data.label_instance)),
+                dev_batches = DataHelper.batch_iter(list(zip(self.test_data.value, self.test_data.label_instance,
+                                                             self.test_data.sentence_len_trim)),
                                                     self.batch_size * 2, 1)
                 for dev_batch in dev_batches:
                     if len(dev_batch) > 0:
-                        small_dev_x, small_dev_y = list(zip(*dev_batch))
-                        dev_step(small_dev_x, small_dev_y)
+                        dev_x, dev_y, dev_s_len = list(zip(*dev_batch))
+                        dev_step(dev_x, dev_y, dev_s_len)
                         print("")
 
             if current_step % self.checkpoint_every == 0:

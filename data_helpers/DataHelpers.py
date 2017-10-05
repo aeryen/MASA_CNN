@@ -75,6 +75,26 @@ class DataHelper(object):
 
         return string.strip().lower()
 
+    def old_clean_str(self, string):
+        """
+        Tokenization/string cleaning for all datasets except for SST.
+        Original taken from https://github.com/yoonkim/CNN_sentence/blob/master/process_data.py
+        """
+        string = re.sub(r"[^A-Za-z0-9(),!?\'\`]", " ", string)
+        string = re.sub(r"\'s", " \'s", string)
+        string = re.sub(r"\'ve", " \'ve", string)
+        string = re.sub(r"n\'t", " n\'t", string)
+        string = re.sub(r"\'re", " \'re", string)
+        string = re.sub(r"\'d", " \'d", string)
+        string = re.sub(r"\'ll", " \'ll", string)
+        string = re.sub(r",", " , ", string)
+        string = re.sub(r"!", " ! ", string)
+        string = re.sub(r"\(", " \( ", string)
+        string = re.sub(r"\)", " \) ", string)
+        string = re.sub(r"\?", " \? ", string)
+        string = re.sub(r"\s{2,}", " ", string)
+        return string.strip().lower()
+
     def load_glove_vector(self):
         glove_lines = list(open(self.glove_path, "r", encoding="utf-8").readlines())
         glove_lines = [s.split(" ", 1) for s in glove_lines if (len(s) > 0 and s != "\n")]
@@ -121,53 +141,59 @@ class DataHelper(object):
             print(("longest doc: " + str(max_length)))
 
         padded_sents = []
+        trim_len = []
         cut_count = 0
         for sent in data.value:
             if len(sent) <= max_length:
                 num_padding = max_length - len(sent)
-                new_sentence = np.concatenate([sent, np.zeros(num_padding, dtype=np.int)])
+                new_sentence = np.concatenate([sent, np.zeros(num_padding, dtype=np.int32)])
+                trim_len.append(len(sent))
             else:
                 new_sentence = sent[:max_length]
+                trim_len.append(max_length)
                 cut_count += 1
             padded_sents.append(new_sentence)
-        data.value = np.array(padded_sents)
+        data.value = np.array(padded_sents, dtype=np.int32)
+        data.sentence_len_trim = np.array(trim_len, dtype=np.int32)
         logging.info(str(cut_count) + " of " + str(len(data.value)) + " sentences are cut. which is " +
-                     str(cut_count/float(len(data.value))))
+                     str(cut_count / float(len(data.value))))
         return data
 
     @staticmethod
-    def pad_document(data: DataObject, target_length=-1) -> DataObject:
+    def pad_document(data: DataObject, target_doc_len=-1, target_sent_len=-1) -> DataObject:
         docs = data.value
         lens = data.doc_size
-        if target_length > 0:
-            tar_length = target_length
-        else:
-            tar_length = max(lens)
-            print("longest doc: " + str(tar_length))
+        if target_doc_len <= 0:
+            target_doc_len = max(lens)
+            print("longest doc: " + str(target_doc_len))
 
         padded_doc = []
-        trim_len = []
-        sent_length = len(docs[0][0])
+        sent_len_pad = []
+        doc_len_trim = []
         cut_count = 0
         for i in range(len(docs)):
             d = docs[i]
-            if len(d) <= tar_length:
-                num_padding = tar_length - len(d)
+            if len(d) <= target_doc_len:
+                num_padding = target_doc_len - len(d)
                 if len(d) > 0:
-                    new_doc = np.concatenate([d, np.zeros([num_padding, sent_length], dtype=np.int)])
-                    trim_len.append(lens[i])
+                    new_doc = np.concatenate([d, np.zeros([num_padding, target_sent_len], dtype=np.int32)])
+                    sent_len_pad.append(np.concatenate([data.sentence_len_trim[i],
+                                                        np.zeros([num_padding], dtype=np.int32)]))
+                    doc_len_trim.append(lens[i])
                 else:
                     raise ValueError("Warning, 0 line file!")
             else:
-                new_doc = d[:tar_length]
-                trim_len.append(tar_length)
+                new_doc = d[:target_doc_len]
+                doc_len_trim.append(target_doc_len)
+                sent_len_pad.append(data.sentence_len_trim[i][:target_doc_len])
                 cut_count += 1
 
             padded_doc.append(new_doc)
-        data.value = np.array(padded_doc)
-        data.doc_size_trim = np.array(trim_len)
+        data.value = np.array(padded_doc, dtype=np.int32)
+        data.doc_size_trim = np.array(doc_len_trim, dtype=np.int32)
+        data.sentence_len_trim = sent_len_pad
         logging.info(str(cut_count) + " of " + str(len(data.value)) + " documents are cut. which is " +
-                     str(cut_count/float(len(data.value))))
+                     str(cut_count / float(len(data.value))))
         return data
 
     @staticmethod
@@ -175,7 +201,7 @@ class DataHelper(object):
         start_index = 0
         docs = []
         for s in sent_count:
-            doc = " <LB> ".join(sent_list[start_index:start_index+s])
+            doc = " <LB> ".join(sent_list[start_index:start_index + s])
             docs.append(doc)
             start_index = start_index + s
         return docs
@@ -211,7 +237,7 @@ class DataHelper(object):
 
     @staticmethod
     def to_onehot_3d(label_vector, total_class):
-        label_vector .astype(np.int)
+        label_vector.astype(np.int)
         y_onehot = np.zeros((len(label_vector), len(label_vector[0]), total_class))
         for instance_index in range(len(label_vector)):
             for aspect_index in range(len(label_vector[0])):

@@ -27,6 +27,7 @@ class CNNNetworkBuilder:
 
         self.input_x = self.input_comp.input_x
         self.input_y = self.input_comp.input_y
+        self.input_s_len = self.input_comp.input_s_len
         self.dropout_keep_prob = self.input_comp.dropout_keep_prob
 
         # middle component =====
@@ -58,7 +59,7 @@ class CNNNetworkBuilder:
     @staticmethod
     def get_middle_component(middle_name, input_comp, data,
                              filter_size_lists=None, num_filters=None,
-                             batch_norm=None, elu=None, fc=[]):
+                             batch_norm=None, elu=None, hidden_state_dim=128, fc=[]):
         logging.info("setting: %s is %s", "filter_size_lists", filter_size_lists)
         logging.info("setting: %s is %s", "num_filters", num_filters)
         logging.info("setting: %s is %s", "batch_norm", batch_norm)
