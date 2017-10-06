@@ -64,6 +64,7 @@ class CNNNetworkBuilder:
         logging.info("setting: %s is %s", "num_filters", num_filters)
         logging.info("setting: %s is %s", "batch_norm", batch_norm)
         logging.info("setting: %s is %s", "elu", elu)
+        logging.info("setting: %s is %s", "HIDDEN_STATE_DIM", hidden_state_dim)
         logging.info("setting: %s is %s", "MIDDLE_FC", fc)
 
         if middle_name == 'Origin':
@@ -79,6 +80,7 @@ class CNNNetworkBuilder:
         elif middle_name == "DocumentGRU":
             middle_comp = DocumentGRU(prev_comp=input_comp, data=data,
                                       batch_normalize=batch_norm, elu=elu,
+                                      hidden_state_dim=hidden_state_dim,
                                       fc=fc)
         else:
             raise NotImplementedError

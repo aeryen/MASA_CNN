@@ -49,7 +49,7 @@ class LSAAC1Output(object):
                     "W_all",
                     shape=[self.overall_hidden_feature_size, self.num_classes],
                     initializer=tf.contrib.layers.xavier_initializer())
-                b_overall = tf.Variable(tf.constant(2.0, shape=[self.num_classes]), name="b_all")
+                b_overall = tf.Variable(tf.constant(0.2, shape=[self.num_classes]), name="b_all")
                 self.l2_sum += tf.nn.l2_loss(W_overall)
                 # overall_scores.shape = [review, 5]
                 self.overall_scores = tf.nn.xw_plus_b(self.overall_hid_layer, W_overall, b_overall, name="scores_all")
@@ -77,7 +77,7 @@ class LSAAC1Output(object):
                     "W_asp",
                     shape=[self.hidden_feature_size, self.num_classes],
                     initializer=tf.contrib.layers.xavier_initializer())
-                b = tf.Variable(tf.constant(2.0, shape=[self.num_classes]), name="b_asp")
+                b = tf.Variable(tf.constant(0.2, shape=[self.num_classes]), name="b_asp")
                 self.l2_sum += tf.nn.l2_loss(W)
                 # [batch_size * sentence]
                 self.rating_score = tf.nn.xw_plus_b(self.rating_layer, W, b, name="score_asp")

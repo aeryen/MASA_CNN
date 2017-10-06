@@ -29,11 +29,13 @@ class AllAspectAvgBaseline(object):
         with tf.name_scope("rating-score"):
             with tf.name_scope("aspect"):
                 for aspect_index in range(0, self.num_aspects):
-                    W = tf.get_variable(
-                        "W_asp"+str(aspect_index),
-                        shape=[self.prev_layer_size, self.num_classes],
-                        initializer=tf.contrib.layers.xavier_initializer())
-                    b = tf.Variable(tf.constant(0.1, shape=[self.num_classes]), name="b_asp"+str(aspect_index))
+                    # W = tf.get_variable(
+                    #     "W_asp"+str(aspect_index),
+                    #     shape=[self.prev_layer_size, self.num_classes],
+                    #     initializer=tf.contrib.layers.xavier_initializer())
+                    W = tf.Variable(tf.truncated_normal([self.prev_layer_size, self.num_classes], stddev=0.1),
+                                    name="W_asp" + str(aspect_index))
+                    b = tf.Variable(tf.constant(0.1, shape=[self.num_classes]), name="b_asp" + str(aspect_index))
                     self.l2_sum += tf.nn.l2_loss(W)
                     # [batch_size * sentence]
                     aspect_rating_score = tf.nn.xw_plus_b(self.prev_output, W, b, name="score_asp")
@@ -53,7 +55,7 @@ class AllAspectAvgBaseline(object):
             print(("batch_sent_rating_aspect " + str(batch_sent_rating_aspect.get_shape())))
 
             # [review, 6 aspect, rating]
-            self.scores = tf.reduce_mean(batch_sent_rating_aspect, 1, name="output_scores")
+            self.scores = tf.reduce_sum(batch_sent_rating_aspect, 1, name="output_scores")
             print(("batch_review_aspect_score " + str(self.scores.get_shape())))
 
             # [review, 6 aspect]

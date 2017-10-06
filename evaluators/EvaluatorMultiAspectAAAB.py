@@ -50,6 +50,7 @@ class EvaluatorMultiAspectAAAB(Evaluator):
                 # Get the placeholders from the graph by name
                 input_x = graph.get_operation_by_name("input_x").outputs[0]
                 input_y = graph.get_operation_by_name("input_y").outputs[0]
+                input_s_len = graph.get_operation_by_name("input_s_len").outputs[0]
                 input_s_count = graph.get_operation_by_name("input_s_count").outputs[0]
                 dropout_keep_prob = graph.get_operation_by_name("dropout_keep_prob").outputs[0]
 
@@ -58,13 +59,16 @@ class EvaluatorMultiAspectAAAB(Evaluator):
                 # Generate batches for one epoch
                 x_batches = DataHelper.batch_iter(self.test_data.value, 32, 1, shuffle=False)
                 y_batches = DataHelper.batch_iter(self.test_data.label_instance, 32, 1, shuffle=False)
+                s_len_batches = DataHelper.batch_iter(self.test_data.sentence_len_trim, 32, 1, shuffle=False)
 
                 # Collect the predictions here
                 all_rating_score = []
-                for x_test_batch, y_test_batch in zip(x_batches, y_batches):
+                for x_test_batch, y_test_batch, s_test_batch in zip(x_batches, y_batches, s_len_batches):
                     [o_output_scores] = sess.run([g_output_scores],
-                                                                    {input_x: x_test_batch, input_y: y_test_batch,
-                                                                     dropout_keep_prob: 1.0})
+                                                 {input_x: x_test_batch,
+                                                  input_y: y_test_batch,
+                                                  input_s_len: s_test_batch,
+                                                  dropout_keep_prob: 1.0})
                     # [reviews aspects scores]
                     all_rating_score.append(o_output_scores)
 
@@ -91,10 +95,10 @@ class EvaluatorMultiAspectAAAB(Evaluator):
 
 if __name__ == "__main__":
     experiment_dir = "E:\\Research\\Paper 02\\MASA_CNN\\runs\\" \
-                     "TripAdvisorDoc_Document_DocumentGRU_AAAB\\171001_1506904416\\"
-    checkpoint_steps = [10000, 11000, 12000, 13000, 14000, 15000]
+                     "TripAdvisorDoc_Document_DocumentGRU_AAAB\\171005_1507263604\\"
+    checkpoint_steps = [1000, 2000, 3000]
 
-    dater = DataHelperHotelOne(embed_dim=300, target_doc_len=64, target_sent_len=90,
+    dater = DataHelperHotelOne(embed_dim=300, target_doc_len=100, target_sent_len=64,
                                aspect_id=None, doc_as_sent=False, doc_level=True)
 
     for step in checkpoint_steps:
