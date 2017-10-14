@@ -1,5 +1,6 @@
 import tensorflow as tf
 import numpy as np
+import logging
 
 from data_helpers.Data import DataObject
 
@@ -37,7 +38,9 @@ class DocumentGRU(object):
 
         with tf.name_scope("rnn"):
             # word_list = tf.unstack(self.sent_embedding, axis=1)
-            cell = tf.contrib.rnn.GRUCell(self.hidden_state_dim)
+            cell = tf.nn.rnn_cell.GRUCell(self.hidden_state_dim)
+            cell = tf.nn.rnn_cell.DropoutWrapper(cell=cell, input_keep_prob=self.dropout, state_keep_prob=self.dropout)
+            logging.warning("cell = tf.nn.rnn_cell.DropoutWrapper(cell=cell, input_keep_prob=self.dropout, state_keep_prob=self.dropout)")
             _, encoding = tf.nn.dynamic_rnn(cell=cell, inputs=self.sent_embedding,
                                             sequence_length=self.input_s_len,
                                             dtype=tf.float32)

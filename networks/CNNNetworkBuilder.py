@@ -11,6 +11,8 @@ from networks.middle_components.DocumentGRU import DocumentGRU
 
 from networks.output_components.OriginOutput import OriginOutput
 from networks.output_components.LSAAC1Output import LSAAC1Output
+from networks.output_components.LSAAC1_INDIBIAS_Output import LSAAC1_INDIBIAS_Output
+from networks.output_components.LSAAC1_MASK_Output import LSAAC1_MASK_Output
 from networks.output_components.LSAAC2Output import LSAAC2Output
 from networks.output_components.AllAspectAvgBaseline import AllAspectAvgBaseline
 
@@ -20,6 +22,7 @@ class CNNNetworkBuilder:
     RNN parameters, and just for flexibility and ease of management the component maker is being made into
     separate function
     """
+
     def __init__(self, input_comp, middle_comp, output_comp):
 
         # input component =====
@@ -28,6 +31,7 @@ class CNNNetworkBuilder:
         self.input_x = self.input_comp.input_x
         self.input_y = self.input_comp.input_y
         self.input_s_len = self.input_comp.input_s_len
+        self.input_s_count = self.input_comp.input_s_count
         self.dropout_keep_prob = self.input_comp.dropout_keep_prob
 
         # middle component =====
@@ -92,16 +96,23 @@ class CNNNetworkBuilder:
         logging.info("setting: %s is %s", "l2_reg", l2_reg)
         logging.info("setting: %s is %s", "OUTPUT_FC", fc)
 
-        if "OriginOutput" in output_name:
+        if "OriginOutput" == output_name:
             output_comp = OriginOutput(input_comp=input_comp, prev_comp=middle_comp, data=data, l2_reg_lambda=l2_reg)
-        elif "LSAAC1" in output_name:
+        elif "LSAAC1" == output_name:
             output_comp = LSAAC1Output(input_comp=input_comp, prev_comp=middle_comp, data=data,
                                        l2_reg_lambda=l2_reg, fc=fc)
-        elif "LSAAC2" in output_name:
+        elif "LSAAC1_INDIBIAS" == output_name:
+            output_comp = LSAAC1_INDIBIAS_Output(input_comp=input_comp, prev_comp=middle_comp, data=data,
+                                                 l2_reg_lambda=l2_reg, fc=fc)
+        elif "LSAAC1_MASK" == output_name:
+            output_comp = LSAAC1_MASK_Output(input_comp=input_comp, prev_comp=middle_comp, data=data,
+                                             l2_reg_lambda=l2_reg, fc=fc)
+        elif "LSAAC2" == output_name:
             output_comp = LSAAC2Output(input_comp=input_comp, prev_comp=middle_comp, data=data,
                                        l2_reg_lambda=l2_reg, fc=fc)
-        elif "AAAB" in output_name:
-            output_comp = AllAspectAvgBaseline(input_comp=input_comp, prev_comp=middle_comp, data=data, l2_reg_lambda=l2_reg)
+        elif "AAAB" == output_name:
+            output_comp = AllAspectAvgBaseline(input_comp=input_comp, prev_comp=middle_comp, data=data,
+                                               l2_reg_lambda=l2_reg)
         else:
             raise NotImplementedError
 

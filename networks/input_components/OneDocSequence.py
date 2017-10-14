@@ -28,7 +28,7 @@ class OneDocSequence:
                     tf.random_uniform([self.vocab_size, self.embedding_dim], -1.0, 1.0),
                     name="W")
             else:
-                W = tf.Variable(self.init_embedding, name="W", dtype="float32")
+                W = tf.Variable(self.init_embedding, name="W", dtype="float32", trainable=False)
             self.embedded = tf.nn.embedding_lookup(W, self.input_x, name="embedded_words")
             print(("self.embedded " + str(self.embedded.get_shape())))
 

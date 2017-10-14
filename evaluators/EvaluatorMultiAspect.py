@@ -14,13 +14,20 @@ import utils.ArchiveManager as AM
 from data_helpers.DataHelperHotelOne import DataHelperHotelOne
 
 aspect_name = ["Other", "Value", "Room", "Location", "Cleanliness", "Service"]
+
+
 # aspect_name = ["Other", "All", "Value", "Room", "Location", "Cleanliness", "Service"]
 
 
 class EvaluatorMultiAspect(Evaluator):
-    def __init__(self, data_helper: DataHelper):
+    def __init__(self, data_helper: DataHelper, use_train_data=False):
         self.data_helper = data_helper
-        self.test_data = self.data_helper.get_test_data()
+        self.use_train_data = use_train_data
+        if not self.use_train_data:
+            self.test_data = self.data_helper.get_test_data()
+        else:
+            self.test_data = self.data_helper.get_train_data()
+
         self.eval_log = None
 
     def evaluate(self, experiment_dir, checkpoint_step, doc_acc=True, do_is_training=True):
@@ -29,7 +36,13 @@ class EvaluatorMultiAspect(Evaluator):
         else:
             checkpoint_file = tf.train.latest_checkpoint(experiment_dir + "/checkpoints/", latest_filename=None)
         file_name = os.path.basename(checkpoint_file)
-        Evaluator.get_exp_logger(exp_dir=experiment_dir, checkpoing_file_name=file_name)
+        if not self.use_train_data:
+            self.result_dir = experiment_dir
+        else:
+            self.result_dir = experiment_dir + "\\train_data_output\\"
+            os.makedirs(self.result_dir)
+
+        Evaluator.get_exp_logger(exp_dir=self.result_dir, checkpoing_file_name=file_name)
 
         logging.info("Evaluating: " + __file__)
         logging.info("Test for prob: " + self.data_helper.problem_name)
@@ -62,15 +75,18 @@ class EvaluatorMultiAspect(Evaluator):
                 x_batches = DataHelper.batch_iter(self.test_data.value, 32, 1, shuffle=False)
                 y_batches = DataHelper.batch_iter(self.test_data.label_instance, 32, 1, shuffle=False)
                 s_len_batches = DataHelper.batch_iter(self.test_data.sentence_len_trim, 32, 1, shuffle=False)
+                s_count_batches = DataHelper.batch_iter(self.test_data.doc_size_trim, 32, 1, shuffle=False)
 
                 # Collect the predictions here
                 all_rating_score = []
                 all_aspect_dist = []
-                for x_test_batch, y_test_batch, s_test_batch in zip(x_batches, y_batches, s_len_batches):
+                for x_test_batch, y_test_batch, s_len_batch, s_cnt_batch in\
+                        zip(x_batches, y_batches, s_len_batches, s_count_batches):
                     [o_output_scores, o_softmax_related] = sess.run([g_output_scores, g_softmax_related],
                                                                     {input_x: x_test_batch,
                                                                      input_y: y_test_batch,
-                                                                     input_s_len: s_test_batch,
+                                                                     input_s_len: s_len_batch,
+                                                                     input_s_count: s_cnt_batch,
                                                                      dropout_keep_prob: 1.0})
                     # [reviews aspects scores]
                     all_rating_score.append(o_output_scores)
@@ -92,13 +108,12 @@ class EvaluatorMultiAspect(Evaluator):
 
                 sentence_aspect_names = [aspect_name[i] for i in clean_aspect_max]
 
-        with open(experiment_dir + '/aspect_rating.out', 'wb') as f:
+        with open(self.result_dir + '\\' + str(checkpoint_step) + '_aspect_rating.out', 'wb') as f:
             np.savetxt(f, rating_pred, fmt='%d', delimiter='\t')
-        with open(experiment_dir + '/spect_dist.out', 'wb') as f:
+        with open(self.result_dir + '\\' + str(checkpoint_step) + '_aspect_dist.out', 'wb') as f:
             np.savetxt(f, clean_aspect_dist, fmt='%1.5f', delimiter='\t')
         # np.savetxt(experiment_dir + '/aspect_related.out', clean_aspect_max, fmt='%1.0f')
-
-        with open(experiment_dir + '/aspect_related_name.out', 'w') as aspect_name_file:
+        with open(self.result_dir + '\\' + str(checkpoint_step) + '_aspect_related_name.out', 'w') as aspect_name_file:
             for item in sentence_aspect_names:
                 aspect_name_file.write("%s\n" % item)
 
@@ -117,8 +132,8 @@ class EvaluatorMultiAspect(Evaluator):
 
 if __name__ == "__main__":
     experiment_dir = "E:\\Research\\Paper 02\\MASA_CNN\\runs\\" \
-                     "TripAdvisorDoc_Document_DocumentGRU_LSAAC1\\171006_1507298657\\"
-    checkpoint_steps = [3500, 4000, 4500, 5000, 5500]
+                     "TripAdvisorDoc_Document_DocumentGRU_LSAAC1_MASK\\171012_1507870633\\"
+    checkpoint_steps = [4500]
 
     dater = DataHelperHotelOne(embed_dim=300, target_doc_len=100, target_sent_len=64,
                                aspect_id=None, doc_as_sent=False, doc_level=True)
@@ -126,5 +141,5 @@ if __name__ == "__main__":
     for step in checkpoint_steps:
         # dater = DataHelperHotelOne(embed_dim=300, target_sent_len=1024, target_doc_len=None,
         #                            aspect_id=1, doc_as_sent=True)
-        ev = EvaluatorMultiAspect(data_helper=dater)
+        ev = EvaluatorMultiAspect(data_helper=dater, use_train_data=True)
         ev.evaluate(experiment_dir=experiment_dir, checkpoint_step=step)

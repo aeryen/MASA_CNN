@@ -1,8 +1,9 @@
 from sklearn.metrics import classification_report
 
-input_dir = "../output/1467016279/"
+input_dir = "..\\runs\\TripAdvisorDoc_Document_DocumentGRU_LSAAC1_MASK\\171012_1507870633\\"
+step = 4500
 
-predict_aspect_list = list(open(input_dir + "aspect_related_name.out", "r").readlines())
+predict_aspect_list = list(open(input_dir + str(step) + "_aspect_related_name.out", "r").readlines())
 predict_aspect_list = [s.strip().lower() for s in predict_aspect_list if (len(s) > 0 and s != "\n")]
 predict_aspect_list = ['none' if s == 'all' else s for s in predict_aspect_list]
 

@@ -106,7 +106,8 @@ class LSAAC1Output(object):
                 shape=[self.hidden_feature_size, self.num_aspects],
                 initializer=tf.contrib.layers.xavier_initializer())
             b = tf.Variable(tf.constant(0.1, shape=[self.num_aspects]), name="b_r")
-            # self.l2_sum += tf.nn.l2_loss(W)
+            # self.l2_sum += tf.reduce_sum(tf.norm(W, ord=1, axis=0))
+
             self.attri_scores = tf.nn.xw_plus_b(self.aspect_layer, W, b, name="scores_related")
             # [batch_size * sentence, num_aspects]
             self.attri_dist = tf.nn.softmax(self.attri_scores, name="softmax_related")

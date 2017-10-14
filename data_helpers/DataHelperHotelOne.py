@@ -27,6 +27,12 @@ class DataHelperHotelOne(DataHelper):
 
         self.load_all_data()
 
+    def print_rating_distribution(self, y):
+        for aspect_index in range(y.shape[1]):
+            for score in range(5):
+                print(str(sum(y[:, aspect_index] == score)), end="\t")
+            print("")
+
     def load_files(self, load_test) -> DataObject:
         """
         Loads MR polarity data from files, splits the data into words and generates labels.
@@ -43,6 +49,7 @@ class DataHelperHotelOne(DataHelper):
             y = [s.split(" ") for s in aspect_rating]
             y = np.array(y)[:, 0:-1]
             y = y.astype(np.int) - 1
+            # self.print_rating_distribution(y)
             y_onehot = self.to_onehot_3d(y, self.num_classes)
         else:
             y = [s.split(" ")[self.aspect_id] for s in aspect_rating]

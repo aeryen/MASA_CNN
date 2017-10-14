@@ -184,8 +184,8 @@ class DataHelper(object):
                     raise ValueError("Warning, 0 line file!")
             else:
                 new_doc = d[:target_doc_len]
-                doc_len_trim.append(target_doc_len)
                 sent_len_pad.append(data.sentence_len_trim[i][:target_doc_len])
+                doc_len_trim.append(target_doc_len)
                 cut_count += 1
 
             padded_doc.append(new_doc)

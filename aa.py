@@ -46,7 +46,7 @@ if __name__ == "__main__":
     data_name = "TripAdvisorDoc"
     input_comp_name = "Document"
     middle_comp_name = "DocumentGRU"
-    output_comp_name = "LSAAC1"
+    output_comp_name = "LSAAC1_MASK"
 
     am = ArchiveManager(data_name=data_name, input_name=input_comp_name, middle_name=middle_comp_name, output_name=output_comp_name)
     get_exp_logger(am)
@@ -78,13 +78,13 @@ if __name__ == "__main__":
         output_comp = CNNNetworkBuilder.get_output_component(output_name=output_comp_name,
                                                              input_comp=input_comp,
                                                              middle_comp=middle_comp,
-                                                             data=dater.get_train_data(), l2_reg=0.7, fc=[])
+                                                             data=dater.get_train_data(), l2_reg=0.1, fc=[])
 
         tt = TrainTask(data_helper=dater, am=am,
                        input_component=input_comp,
                        middle_component=middle_comp,
                        output_component=output_comp,
-                       batch_size=32, total_step=3000, evaluate_every=500, checkpoint_every=500, max_to_keep=6,
+                       batch_size=32, total_step=6000, evaluate_every=500, checkpoint_every=500, max_to_keep=10,
                        restore_path=None)
 
         start = timer()
