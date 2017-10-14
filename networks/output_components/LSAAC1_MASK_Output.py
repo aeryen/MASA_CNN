@@ -80,12 +80,18 @@ class LSAAC1_MASK_Output(object):
                     initializer=tf.contrib.layers.xavier_initializer())
                 self.l2_sum += tf.nn.l2_loss(W)
 
-                logging.warning("INDIIIIIIIIIIIIIIII BIAS")
-                for aspect_index in range(1, self.num_aspects):
-                    b = tf.Variable(tf.constant(0.2, shape=[self.num_classes]), name="b_asp" + str(aspect_index))
-                    self.rating_score.append(
-                        tf.nn.xw_plus_b(self.rating_layer, W, b, name="score_asp" + str(aspect_index))
-                    )
+                # logging.warning("INDIIIIIIIIIIIIIIII BIAS")
+                # for aspect_index in range(1, self.num_aspects):
+                #     b = tf.Variable(tf.constant(0.2, shape=[self.num_classes]), name="b_asp" + str(aspect_index))
+                #     self.rating_score.append(
+                #         tf.nn.xw_plus_b(self.rating_layer, W, b, name="score_asp" + str(aspect_index))
+                #     )
+                logging.warning("SINGLE BIAS")
+                b = tf.Variable(tf.constant(0.1, shape=[self.num_classes]), name="b_asp")
+                self.rating_score = tf.nn.xw_plus_b(self.rating_layer, W, b, name="score_asp")
+
+                logging.warning("SCORE WITH SIGMOID")
+                self.rating_score = tf.sigmoid(self.rating_score, name="score_asp_sig")
 
         with tf.name_scope("related"):
             if fc:
@@ -109,6 +115,9 @@ class LSAAC1_MASK_Output(object):
                 shape=[self.hidden_feature_size, self.num_aspects],
                 initializer=tf.contrib.layers.xavier_initializer())
             b = tf.Variable(tf.constant(0.1, shape=[self.num_aspects]), name="b_r")
+            self.l2_sum += tf.nn.l2_loss(W)
+            logging.warning("with aspect attr L2 loss: self.l2_sum += tf.nn.l2_loss(W)")
+
             # self.l2_sum += tf.reduce_sum(tf.norm(W, ord=1, axis=0))
 
             self.attri_scores = tf.nn.xw_plus_b(self.aspect_layer, W, b, name="scores_related")
@@ -124,7 +133,9 @@ class LSAAC1_MASK_Output(object):
                 prob_aspect_sent = tf.tile(tf.expand_dims(self.attri_dist[:, aspect_index], -1),
                                            [1, self.num_classes])
 
-                aspect_rating = tf.multiply(self.rating_score[aspect_index-1], prob_aspect_sent,
+                # aspect_rating = tf.multiply(self.rating_score[aspect_index-1], prob_aspect_sent,
+                #                             name="aspect-" + str(aspect_index) + "-scale")
+                aspect_rating = tf.multiply(self.rating_score, prob_aspect_sent,
                                             name="aspect-" + str(aspect_index) + "-scale")
                 print(("scaled aspect_rating " + str(aspect_index) + " " + str(aspect_rating.get_shape())))
 

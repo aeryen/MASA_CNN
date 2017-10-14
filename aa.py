@@ -78,7 +78,7 @@ if __name__ == "__main__":
         output_comp = CNNNetworkBuilder.get_output_component(output_name=output_comp_name,
                                                              input_comp=input_comp,
                                                              middle_comp=middle_comp,
-                                                             data=dater.get_train_data(), l2_reg=0.1, fc=[])
+                                                             data=dater.get_train_data(), l2_reg=0.3, fc=[])
 
         tt = TrainTask(data_helper=dater, am=am,
                        input_component=input_comp,

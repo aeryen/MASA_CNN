@@ -80,7 +80,7 @@ class EvaluatorMultiAspect(Evaluator):
                 # Collect the predictions here
                 all_rating_score = []
                 all_aspect_dist = []
-                for x_test_batch, y_test_batch, s_len_batch, s_cnt_batch in\
+                for x_test_batch, y_test_batch, s_len_batch, s_cnt_batch in \
                         zip(x_batches, y_batches, s_len_batches, s_count_batches):
                     [o_output_scores, o_softmax_related] = sess.run([g_output_scores, g_softmax_related],
                                                                     {input_x: x_test_batch,
@@ -118,22 +118,27 @@ class EvaluatorMultiAspect(Evaluator):
                 aspect_name_file.write("%s\n" % item)
 
         logging.info("Total number of OUTPUT instances: " + str(len(rating_pred)))
-        for aspect_index in range(self.test_data.num_aspects):
-            acc = accuracy_score(y_true=rating_true[:, aspect_index], y_pred=rating_pred[:, aspect_index])
-            logging.info("ACC\ta" + str(aspect_index) + "\t" + str(acc))
 
-            mse = mean_squared_error(y_true=rating_true[:, aspect_index], y_pred=rating_pred[:, aspect_index])
-            logging.info("MSE\ta" + str(aspect_index) + "\t" + str(mse))
-            # correct_predictions = float(sum(all_predictions == y_test))
-            # average_accuracy = all_predictions.sum(axis=0) / float(all_predictions.shape[0])
-            # print "\t" + str(average_accuracy)
-            # print("Accuracy: {:g}".format(average_accuracy / float(len(y_test))))
+        logging.info("ASP\t" + '\t'.join(map(str, range(self.test_data.num_aspects))))
+        acc = []
+        for aspect_index in range(self.test_data.num_aspects):
+            acc.append(accuracy_score(y_true=rating_true[:, aspect_index], y_pred=rating_pred[:, aspect_index]))
+        logging.info("ACC\t" + "\t".join(map(str, acc)))
+        logging.info("AVG ALL\t" + str(np.mean(np.array(acc))))
+        logging.info("AVG ASP\t" + str(np.mean(np.array(acc)[1:])))
+
+        mse = []
+        for aspect_index in range(self.test_data.num_aspects):
+            mse.append(mean_squared_error(y_true=rating_true[:, aspect_index], y_pred=rating_pred[:, aspect_index]))
+        logging.info("MSE\t" + "\t".join(map(str, mse)))
+        logging.info("AVG ALL\t" + str(np.mean(np.array(mse))))
+        logging.info("AVG ASP\t" + str(np.mean(np.array(mse)[1:])))
 
 
 if __name__ == "__main__":
     experiment_dir = "E:\\Research\\Paper 02\\MASA_CNN\\runs\\" \
-                     "TripAdvisorDoc_Document_DocumentGRU_LSAAC1_MASK\\171012_1507870633\\"
-    checkpoint_steps = [4500]
+                     "TripAdvisorDoc_Document_DocumentGRU_LSAAC1_MASK\\171014_1507982713\\"
+    checkpoint_steps = [1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000]
 
     dater = DataHelperHotelOne(embed_dim=300, target_doc_len=100, target_sent_len=64,
                                aspect_id=None, doc_as_sent=False, doc_level=True)
@@ -141,5 +146,5 @@ if __name__ == "__main__":
     for step in checkpoint_steps:
         # dater = DataHelperHotelOne(embed_dim=300, target_sent_len=1024, target_doc_len=None,
         #                            aspect_id=1, doc_as_sent=True)
-        ev = EvaluatorMultiAspect(data_helper=dater, use_train_data=True)
+        ev = EvaluatorMultiAspect(data_helper=dater, use_train_data=False)
         ev.evaluate(experiment_dir=experiment_dir, checkpoint_step=step)
