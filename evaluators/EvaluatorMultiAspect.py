@@ -12,9 +12,9 @@ from evaluators.Evaluator import Evaluator
 from data_helpers.DataHelpers import DataHelper
 import utils.ArchiveManager as AM
 from data_helpers.DataHelperHotelOne import DataHelperHotelOne
+from tools.aspect_accuracy_human import calc_aspect_f1
 
 aspect_name = ["Other", "Value", "Room", "Location", "Cleanliness", "Service"]
-
 
 # aspect_name = ["Other", "All", "Value", "Room", "Location", "Cleanliness", "Service"]
 
@@ -134,11 +134,13 @@ class EvaluatorMultiAspect(Evaluator):
         logging.info("AVG ALL\t" + str(np.mean(np.array(mse))))
         logging.info("AVG ASP\t" + str(np.mean(np.array(mse)[1:])))
 
+        calc_aspect_f1(input_dir=experiment_dir, step=checkpoint_step)
+
 
 if __name__ == "__main__":
     experiment_dir = "E:\\Research\\Paper 02\\MASA_CNN\\runs\\" \
-                     "TripAdvisorDoc_Document_DocumentGRU_LSAAC1_MASK\\171014_1507982713\\"
-    checkpoint_steps = [1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000]
+                     "TripAdvisorDoc_Document_DocumentGRU_LSAAC1_MASK\\171016_1508130111\\"
+    checkpoint_steps = [1000, 1500, 2000, 2500, 3000]
 
     dater = DataHelperHotelOne(embed_dim=300, target_doc_len=100, target_sent_len=64,
                                aspect_id=None, doc_as_sent=False, doc_level=True)

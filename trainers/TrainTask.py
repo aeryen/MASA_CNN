@@ -101,6 +101,8 @@ class TrainTask:
             self.dev_summary_writer = tf.summary.FileWriter(dev_summary_dir, graph)
 
     def training(self, dropout_keep_prob, batch_norm):
+        logging.info("setting: %s is %s", "dropout_keep_prob", dropout_keep_prob)
+        logging.info("setting: %s is %s", "batch_norm", batch_norm)
 
         session_conf = tf.ConfigProto(allow_soft_placement=True, log_device_placement=False)
         sess = tf.Session(config=session_conf)

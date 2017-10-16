@@ -1,7 +1,11 @@
 from sklearn.metrics import classification_report
+import os
 import logging
 
-input_dir = "..\\runs\\TripAdvisorDoc_Document_DocumentGRU_LSAAC1_MASK\\171014_1507966137\\"
+input_dir = os.path.join(os.path.dirname(__file__), '..',
+                         'runs',
+                         'TripAdvisorDoc_Document_DocumentGRU_LSAAC1_MASK',
+                         '171014_1507966137', '')
 step = 4500
 
 
@@ -10,7 +14,10 @@ def calc_aspect_f1(input_dir, step):
     predict_aspect_list = [s.strip().lower() for s in predict_aspect_list if (len(s) > 0 and s != "\n")]
     predict_aspect_list = ['none' if s == 'all' else s for s in predict_aspect_list]
 
-    data_dir = "../data/hotel_balance_LengthFix1_3000per/"
+    data_dir = os.path.join(os.path.dirname(__file__), '..',
+                            'data',
+                            'hotel_balance_LengthFix1_3000per',
+                            '')
 
     file_yifan = list(open(data_dir + "test_aspect_0.yifan.aspect", "r").readlines())
     file_yifan = [s.split() for s in file_yifan if (len(s) > 0 and s != "\n")]
@@ -31,7 +38,7 @@ def calc_aspect_f1(input_dir, step):
 
     logging.info('\n')
 
-    result_fan = classification_report(aspect_fan[:500], predict_aspect_list[:500],
+    result_fan = classification_report(aspect_fan[:600], predict_aspect_list[:600],
                                        labels=["value", "room", "location", "cleanliness", "service"], digits=2)
     logging.info(result_fan)
 
