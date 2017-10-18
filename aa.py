@@ -10,6 +10,7 @@ from data_helpers.DataHelperHotelOne import DataHelperHotelOne
 
 from evaluators.EvaluatorOrigin import EvaluatorOrigin
 from evaluators.EvaluatorMultiAspect import EvaluatorMultiAspect
+from evaluators.EvaluatorMultiAspectRegression import EvaluatorMultiAspectRegression
 from evaluators.EvaluatorMultiAspectAAAB import EvaluatorMultiAspectAAAB
 
 def get_exp_logger(am):
@@ -46,7 +47,7 @@ if __name__ == "__main__":
     data_name = "TripAdvisorDoc"
     input_comp_name = "Document"
     middle_comp_name = "DocumentGRU"
-    output_comp_name = "LSAAC1_MASK"
+    output_comp_name = "LSAAR1"
 
     am = ArchiveManager(data_name=data_name, input_name=input_comp_name, middle_name=middle_comp_name, output_name=output_comp_name)
     get_exp_logger(am)
@@ -60,10 +61,12 @@ if __name__ == "__main__":
     elif data_name == "TripAdvisorDoc":
         dater = DataHelperHotelOne(embed_dim=300, target_doc_len=100, target_sent_len=64,
                                    aspect_id=None, doc_as_sent=False, doc_level=True)
-        if output_comp_name != "AAAB":
-            ev = EvaluatorMultiAspect(data_helper=dater)
-        else:
+        if output_comp_name == "AAAB":
             ev = EvaluatorMultiAspectAAAB(data_helper=dater)
+        if output_comp_name == "LSAAR1" or output_comp_name == "LSAAR2":
+            ev = EvaluatorMultiAspectRegression(data_helper=dater)
+        else:
+            ev = EvaluatorMultiAspect(data_helper=dater)
     else:
         raise NotImplementedError
 
@@ -74,23 +77,23 @@ if __name__ == "__main__":
                                                              data=dater.get_train_data(),
                                                              filter_size_lists=[[3, 4, 5]], num_filters=100,
                                                              batch_norm=None, elu=None,
-                                                             hidden_state_dim=128, fc=[])
+                                                             hidden_state_dim=256, fc=[])
         output_comp = CNNNetworkBuilder.get_output_component(output_name=output_comp_name,
                                                              input_comp=input_comp,
                                                              middle_comp=middle_comp,
-                                                             data=dater.get_train_data(), l2_reg=0.1, fc=[])
+                                                             data=dater.get_train_data(), l2_reg=0.4, fc=[])
 
         tt = TrainTask(data_helper=dater, am=am,
                        input_component=input_comp,
                        middle_component=middle_comp,
                        output_component=output_comp,
-                       batch_size=32, total_step=10000, evaluate_every=500, checkpoint_every=500, max_to_keep=10,
+                       batch_size=32, total_step=6000, evaluate_every=500, checkpoint_every=500, max_to_keep=10,
                        restore_path=None)
 
         start = timer()
         # n_fc variable controls how many fc layers you got at the end, n_conv does that for conv layers
 
-        tt.training(dropout_keep_prob=0.75, batch_norm=False)
+        tt.training(dropout_keep_prob=1.0, batch_norm=False)
         end = timer()
         print("total training time: " + str(end - start))
 

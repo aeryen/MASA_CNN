@@ -49,7 +49,6 @@ class LSAAC2Output(object):
                 self.l2_sum += tf.nn.l2_loss(W)
                 # [batch_size * sentence]
                 self.rating_score = tf.nn.xw_plus_b(self.rating_layer, W, b, name="score_asp")
-                # scores = tf.reshape(scores, [-1], name="score_a" + str(aspect_index))
                 print(("self.aspect_rating_score " + str(self.rating_score.get_shape())))
 
         with tf.name_scope("related"):
@@ -101,6 +100,13 @@ class LSAAC2Output(object):
                                                                   self.num_aspects, self.num_classes],
                                                   name="output_score")
             print(("batch_sent_rating_aspect " + str(batch_sent_rating_aspect.get_shape())))
+
+            # MASK
+            logging.warn("WITH SEQUENCE MASK")
+            mask = tf.sequence_mask(self.s_count, maxlen=self.document_length)
+            mask = tf.expand_dims(tf.expand_dims(mask, -1), -1)
+            mask = tf.tile(mask, [1, 1, self.num_aspects, self.num_classes], name="sequence_mask")
+            batch_sent_rating_aspect = batch_sent_rating_aspect * tf.cast(mask, dtype=tf.float32)
 
             # [review, 6 aspect, rating]
             self.scores = tf.reduce_sum(batch_sent_rating_aspect, 1, name="output_scores")

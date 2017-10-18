@@ -31,10 +31,10 @@ class LSAAC1_MASK_Output(object):
         self.rating_score = []
         with tf.name_scope("rating-score"):
             with tf.name_scope("overall"):
-                self.overall_review_drop = tf.nn.dropout(self.review_features, keep_prob=self.dropout_keep_prob,
-                                                         name="overall_review_drop")
-                logging.warning(
-                    "self.overall_review_drop = tf.nn.dropout(self.review_features, keep_prob=self.dropout_keep_prob)")
+                # self.overall_review_drop = tf.nn.dropout(self.review_features, keep_prob=self.dropout_keep_prob,
+                #                                          name="overall_review_drop")
+                # logging.warning(
+                #     "self.overall_review_drop = tf.nn.dropout(self.review_features, keep_prob=self.dropout_keep_prob)")
                 if fc:
                     Wh_overall = tf.get_variable(
                         "overall_Wh",
@@ -43,13 +43,13 @@ class LSAAC1_MASK_Output(object):
                     bh_overall = tf.Variable(tf.constant(0.1, shape=[fc[0]]), name="bh")
                     self.l2_sum += tf.nn.l2_loss(Wh_overall)
 
-                    self.overall_hid_layer = tf.nn.xw_plus_b(self.overall_review_drop, Wh_overall, bh_overall,
+                    self.overall_hid_layer = tf.nn.xw_plus_b(self.review_features, Wh_overall, bh_overall,
                                                              name="overall_hid")
                     self.overall_hid_layer = tf.nn.elu(self.overall_hid_layer, name='overall_hid_elu')
 
                     self.overall_hidden_feature_size = fc[0]
                 else:
-                    self.overall_hid_layer = self.overall_review_drop
+                    self.overall_hid_layer = self.review_features
                     self.overall_hidden_feature_size = self.review_feature_size
                 W_overall = tf.get_variable(
                     "W_all",
@@ -63,11 +63,11 @@ class LSAAC1_MASK_Output(object):
                 self.overall_distribution = tf.nn.softmax(self.overall_scores, name="dist_all")
                 print("self.overall_distribution : " + str(self.overall_distribution.get_shape()))
 
-            self.sent_features_for_aspect_score_drop = tf.nn.dropout(self.sent_features,
-                                                                     keep_prob=self.dropout_keep_prob,
-                                                                     name="sent_features_for_aspect_score_drop")
-            logging.warning(
-                "self.sent_features_for_aspect_score_drop = tf.nn.dropout(self.sent_features, keep_prob=self.dropout_keep_prob)")
+            # self.sent_features_for_aspect_score_drop = tf.nn.dropout(self.sent_features,
+            #                                                          keep_prob=self.dropout_keep_prob,
+            #                                                          name="sent_features_for_aspect_score_drop")
+            # logging.warning(
+            #     "self.sent_features_for_aspect_score_drop = tf.nn.dropout(self.sent_features, keep_prob=self.dropout_keep_prob)")
             with tf.name_scope("aspect"):
                 if fc:
                     Wh = tf.get_variable(
@@ -77,13 +77,13 @@ class LSAAC1_MASK_Output(object):
                     bh = tf.Variable(tf.constant(0.1, shape=[fc[0]]), name="bh")
                     self.l2_sum += tf.nn.l2_loss(Wh)
 
-                    self.rating_layer = tf.nn.xw_plus_b(self.sent_features_for_aspect_score_drop, Wh, bh,
+                    self.rating_layer = tf.nn.xw_plus_b(self.sent_features, Wh, bh,
                                                         name="rating_hid")
                     self.rating_layer = tf.nn.elu(self.rating_layer, name='rating_hid_elu')
 
                     self.hidden_feature_size = fc[0]
                 else:
-                    self.rating_layer = self.sent_features_for_aspect_score_drop
+                    self.rating_layer = self.sent_features
                     self.hidden_feature_size = self.sentence_feature_size
 
                 W = tf.get_variable(
@@ -105,11 +105,11 @@ class LSAAC1_MASK_Output(object):
                 # logging.warning("SCORE WITH softmax")
                 # self.rating_score = tf.nn.softmax(self.rating_score, name="score_asp_softmax")
 
-        self.sent_features_for_attr_drop = tf.nn.dropout(self.sent_features,
-                                                         keep_prob=self.dropout_keep_prob,
-                                                         name="sent_features_for_attr_drop")
-        logging.warning(
-            "self.sent_features_for_attr_drop = tf.nn.dropout(self.sent_features, keep_prob=self.dropout_keep_prob)")
+        # self.sent_features_for_attr_drop = tf.nn.dropout(self.sent_features,
+        #                                                  keep_prob=self.dropout_keep_prob,
+        #                                                  name="sent_features_for_attr_drop")
+        # logging.warning(
+        #     "self.sent_features_for_attr_drop = tf.nn.dropout(self.sent_features, keep_prob=self.dropout_keep_prob)")
         with tf.name_scope("related"):
             if fc:
                 Wh = tf.get_variable(
@@ -119,12 +119,12 @@ class LSAAC1_MASK_Output(object):
                 bh = tf.Variable(tf.constant(0.1, shape=[fc[0]]), name="bh")
                 self.l2_sum += tf.nn.l2_loss(Wh)
 
-                self.aspect_layer = tf.nn.xw_plus_b(self.sent_features_for_attr_drop, Wh, bh, name="relate_hid")
+                self.aspect_layer = tf.nn.xw_plus_b(self.sent_features, Wh, bh, name="relate_hid")
                 self.aspect_layer = tf.nn.elu(self.aspect_layer, name='relate_hid_elu')
 
                 self.hidden_feature_size = fc[0]
             else:
-                self.aspect_layer = self.sent_features_for_attr_drop
+                self.aspect_layer = self.sent_features
                 self.hidden_feature_size = self.sentence_feature_size
 
             W = tf.get_variable(

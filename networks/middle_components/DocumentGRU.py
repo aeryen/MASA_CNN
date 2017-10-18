@@ -16,7 +16,6 @@ class DocumentGRU(object):
     def __init__(
             self, prev_comp, data: DataObject,
             batch_normalize=False, elu=False, hidden_state_dim=128, fc=[]):
-
         self.dropout = prev_comp.dropout_keep_prob
         self.prev_output = prev_comp.last_layer
 
@@ -37,16 +36,18 @@ class DocumentGRU(object):
         self.input_s_len = tf.reshape(prev_comp.input_s_len, [-1], name="s_len_flatten")
 
         with tf.name_scope("rnn"):
-            # word_list = tf.unstack(self.sent_embedding, axis=1)
             cell = tf.nn.rnn_cell.GRUCell(self.hidden_state_dim)
+            # logging.warning("cell = tf.nn.rnn_cell.BasicLSTMCell(self.hidden_state_dim)")
+            # cell = tf.nn.rnn_cell.BasicLSTMCell(self.hidden_state_dim)
 
-            # logging.warning("DropoutWrapper(cell=cell, state_keep_prob=self.dropout, variational_recurrent=True, dtype=tf.float32)")
-            # cell = tf.nn.rnn_cell.DropoutWrapper(cell=cell, state_keep_prob=self.dropout,
-            #                                      variational_recurrent=True, dtype=tf.float32)
+            logging.warning("DropoutWrapper(cell=cell, output_keep_prob=self.dropout)")
+            cell = tf.nn.rnn_cell.DropoutWrapper(cell=cell, output_keep_prob=self.dropout)
 
-            _, encoding = tf.nn.dynamic_rnn(cell=cell, inputs=self.sent_embedding,
-                                            sequence_length=self.input_s_len,
-                                            dtype=tf.float32)
+            outputs, encoding = tf.nn.dynamic_rnn(cell=cell, inputs=self.sent_embedding,
+                                                  sequence_length=self.input_s_len,
+                                                  dtype=tf.float32)
+            # encoding = encoding[1]
+
             # Apply nonlinearity
             # h = tf.nn.relu(tf.nn.bias_add(conv, b), name="relu")
             # Max-pooling over the outputs

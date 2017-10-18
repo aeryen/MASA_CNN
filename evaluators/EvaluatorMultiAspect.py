@@ -104,9 +104,9 @@ class EvaluatorMultiAspect(Evaluator):
 
                 rating_pred = np.argmax(all_rating_score, axis=2)
                 rating_true = np.argmax(self.test_data.label_instance, axis=2)
-                clean_aspect_max = np.argmax(clean_aspect_dist, axis=1)
+                clean_aspect_max = np.argmax(clean_aspect_dist[:, 1:], axis=1)  # TODO limit aspect here
 
-                sentence_aspect_names = [aspect_name[i] for i in clean_aspect_max]
+                sentence_aspect_names = [aspect_name[i+1] for i in clean_aspect_max]
 
         with open(self.result_dir + '\\' + str(checkpoint_step) + '_aspect_rating.out', 'wb') as f:
             np.savetxt(f, rating_pred, fmt='%d', delimiter='\t')
@@ -139,8 +139,8 @@ class EvaluatorMultiAspect(Evaluator):
 
 if __name__ == "__main__":
     experiment_dir = "E:\\Research\\Paper 02\\MASA_CNN\\runs\\" \
-                     "TripAdvisorDoc_Document_DocumentGRU_LSAAC1_MASK\\171016_1508130111\\"
-    checkpoint_steps = [1000, 1500, 2000, 2500, 3000]
+                     "TripAdvisorDoc_Document_DocumentGRU_LSAAC1_MASK\\171016_1508185829\\"
+    checkpoint_steps = [1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000]
 
     dater = DataHelperHotelOne(embed_dim=300, target_doc_len=100, target_sent_len=64,
                                aspect_id=None, doc_as_sent=False, doc_level=True)

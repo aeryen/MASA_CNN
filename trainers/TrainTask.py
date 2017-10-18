@@ -6,6 +6,8 @@ from networks.CNNNetworkBuilder import CNNNetworkBuilder
 from data_helpers.DataHelpers import DataHelper
 import utils.ArchiveManager as AM
 
+from networks.output_components.LSAAR1Output import LSAAR1Output
+
 
 class TrainTask:
     """
@@ -59,7 +61,7 @@ class TrainTask:
         logging.info("Train/Dev split (IST): {:d}/{:d}".
                      format(len(self.train_data.label_instance), len(self.test_data.label_instance)))
 
-    def generates_all_summary(self, grads_and_vars, graph_loss, graph_acc, graph_asp_acc, graph):
+    def generates_all_summary(self, grads_and_vars, graph_loss, graph_l2, graph_acc, graph_asp_acc, graph):
         # Keep track of gradient values and sparsity (optional)
         with tf.name_scope('grad_summary'):
             grad_summaries = []
@@ -77,6 +79,7 @@ class TrainTask:
 
         # Summaries for loss and accuracy
         loss_summary = tf.summary.scalar("loss", graph_loss)
+        l2_summary = tf.summary.scalar("l2", graph_l2)
         acc_summary = tf.summary.scalar("accuracy", graph_acc)
 
         if graph_asp_acc is not None:
@@ -90,13 +93,13 @@ class TrainTask:
         # Train Summaries
         with tf.name_scope('train_summary'):
             self.train_summary_op = tf.summary.merge(
-                [loss_summary, acc_summary, grad_summaries_merged])
+                [loss_summary, l2_summary, acc_summary, grad_summaries_merged])
             train_summary_dir = os.path.join(self.exp_dir, "summaries", "train")
             self.train_summary_writer = tf.summary.FileWriter(train_summary_dir, graph)
 
         # Dev summaries
         with tf.name_scope('dev_summary'):
-            self.dev_summary_op = tf.summary.merge([loss_summary, acc_summary])
+            self.dev_summary_op = tf.summary.merge([loss_summary, l2_summary, acc_summary])
             dev_summary_dir = os.path.join(self.exp_dir, "summaries", "dev")
             self.dev_summary_writer = tf.summary.FileWriter(dev_summary_dir, graph)
 
@@ -111,7 +114,13 @@ class TrainTask:
                                     middle_comp=self.middle_comp,
                                     output_comp=self.output_comp)
             graph_loss = cnn.loss
-            graph_accuracy = cnn.accuracy
+            graph_l2 = cnn.l2_sum
+            if type(self.output_comp) is LSAAR1Output:
+                graph_accuracy = cnn.sqr_diff_sum
+                aspect_accuracy = cnn.mse_aspects
+            else:
+                graph_accuracy = cnn.accuracy
+                aspect_accuracy = cnn.aspect_accuracy
             graph_input_x = cnn.input_x
             graph_input_y = cnn.input_y
             graph_drop_keep = cnn.dropout_keep_prob
@@ -119,7 +128,6 @@ class TrainTask:
             graph_s_count = cnn.input_s_count
 
             graph_is_train = cnn.is_training
-            aspect_accuracy = cnn.aspect_accuracy
         else:
             raise NotImplementedError
 
@@ -143,7 +151,8 @@ class TrainTask:
         # tf.add_to_collection("optimizer", optimizer)
 
         self.generates_all_summary(grads_and_vars=grads_and_vars,
-                                   graph_loss=graph_loss, graph_acc=graph_accuracy,
+                                   graph_loss=graph_loss, graph_l2=graph_l2,
+                                   graph_acc=graph_accuracy,
                                    graph_asp_acc=aspect_accuracy, graph=sess.graph)
 
         # Checkpoint directory. Tensorflow assumes this directory already exists so we need to create it
@@ -166,8 +175,8 @@ class TrainTask:
                 graph_drop_keep: dropout_keep_prob,
                 graph_is_train: 1
             }
-            _, step, summaries, loss, accuracy = sess.run(
-                [train_op, global_step, self.train_summary_op, graph_loss, graph_accuracy],
+            _, step, summaries, loss, l2, accuracy = sess.run(
+                [train_op, global_step, self.train_summary_op, graph_loss, graph_l2, graph_accuracy],
                 feed_dict)
             time_str = datetime.datetime.now().isoformat()
             print(("{}: step {}, loss {:g}, acc {:g}".format(time_str, step, loss, accuracy)))
@@ -183,8 +192,8 @@ class TrainTask:
                 graph_drop_keep: 1,
                 graph_is_train: 0
             }
-            step, summaries, loss, accuracy = sess.run(
-                [global_step, self.dev_summary_op, graph_loss, graph_accuracy],
+            step, summaries, loss, l2, accuracy = sess.run(
+                [global_step, self.dev_summary_op, graph_loss, graph_l2, graph_accuracy],
                 feed_dict)
             time_str = datetime.datetime.now().isoformat()
             print(("{}: step {}, loss {:g}, acc {:g}".format(time_str, step, loss, accuracy)))
@@ -205,7 +214,7 @@ class TrainTask:
                 print("\nEvaluation:")
                 dev_batches = DataHelper.batch_iter(list(zip(self.test_data.value, self.test_data.label_instance,
                                                              self.test_data.sentence_len_trim,
-                                                             self.train_data.doc_size_trim)),
+                                                             self.test_data.doc_size_trim)),
                                                     self.batch_size * 2, 1)
                 for dev_batch in dev_batches:
                     if len(dev_batch) > 0:
