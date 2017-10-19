@@ -81,13 +81,13 @@ if __name__ == "__main__":
         output_comp = CNNNetworkBuilder.get_output_component(output_name=output_comp_name,
                                                              input_comp=input_comp,
                                                              middle_comp=middle_comp,
-                                                             data=dater.get_train_data(), l2_reg=0.4, fc=[])
+                                                             data=dater.get_train_data(), l2_reg=0.3, fc=[])
 
         tt = TrainTask(data_helper=dater, am=am,
                        input_component=input_comp,
                        middle_component=middle_comp,
                        output_component=output_comp,
-                       batch_size=32, total_step=6000, evaluate_every=500, checkpoint_every=500, max_to_keep=10,
+                       batch_size=32, total_step=8000, evaluate_every=500, checkpoint_every=500, max_to_keep=10,
                        restore_path=None)
 
         start = timer()

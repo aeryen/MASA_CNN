@@ -90,6 +90,8 @@ class LSAAR1Output(object):
                 # scores = tf.reshape(scores, [-1], name="score_a" + str(aspect_index))
                 print(("self.aspect_rating_score " + str(self.rating_score.get_shape())))
 
+                self.rating_score = 4.0 * tf.sigmoid(self.rating_score, name="score_asp_sigmoid")
+
         with tf.name_scope("related"):
             if fc:
                 Wh = tf.get_variable(
