@@ -9,7 +9,7 @@ import types
 import numpy as np
 import tensorflow as tf
 
-from data_helpers import data_helpers_allAspect_glove_beer
+from data_helpers import DataHelperBeer
 from networks.cnn_regress_a2a_onescore import RegressCNN
 
 
@@ -168,7 +168,7 @@ def train_one_nn(x_train, x_dev, y_train, y_dev, vocabulary, sc_train, sc_dev, e
                     writer.add_summary(summaries, step)
 
             # Generate batches
-            batches = data_helpers_allAspect_glove_beer.batch_iter(
+            batches = DataHelperBeer.batch_iter(
                 list(zip(x_train, y_train, sc_train)), FLAGS.batch_size, FLAGS.num_epochs)
             # Training loop. For each batch...
             for batch in batches:
@@ -177,7 +177,7 @@ def train_one_nn(x_train, x_dev, y_train, y_dev, vocabulary, sc_train, sc_dev, e
                 current_step = tf.train.global_step(sess, global_step)
                 if current_step % FLAGS.evaluate_every == 0:
                     print("\nEvaluation:")
-                    dev_batches = data_helpers_allAspect_glove_beer \
+                    dev_batches = DataHelperBeer \
                         .batch_iter(list(zip(x_dev, y_dev, sc_dev)), 64, 1)
                     for dev_batch in dev_batches:
                         small_dev_x, small_dev_y, small_dev_sc = list(zip(*dev_batch))
@@ -224,7 +224,7 @@ if __name__ == "__main__":
 
     # if not os.path.isfile("xyvocab.pickle"):
     time1 = time.time()
-    x, y, vocabulary, vocabulary_inv, s_count, embed_matrix = data_helpers_allAspect_glove_beer.load_data()
+    x, y, vocabulary, vocabulary_inv, s_count, embed_matrix = DataHelperBeer.load_data()
     time2 = time.time()
     print('Load Data took ' + str((time2 - time1) * 1000.0) + ' ms')
     print('x have a size of ' + str(sys.getsizeof(x) / 1024.0) + 'kbytes')

@@ -11,15 +11,13 @@ from data_helpers.Data import DataObject
 from evaluators.Evaluator import Evaluator
 from data_helpers.DataHelpers import DataHelper
 import utils.ArchiveManager as AM
-from data_helpers.DataHelperHotelOne import DataHelperHotelOne
-from tools.aspect_accuracy_human import calc_aspect_f1
+from data_helpers.DataHelperBeer import DataHelperBeer
+from tools.aspect_accuracy_human_beer import calc_aspect_f1
 
-aspect_name = ["Other", "Value", "Room", "Location", "Cleanliness", "Service"]
-
-# aspect_name = ["Other", "All", "Value", "Room", "Location", "Cleanliness", "Service"]
+aspect_name = ["overall", "appearance", "taste", "palate", "aroma"]
 
 
-class EvaluatorMultiAspectRegression(Evaluator):
+class EvaluatorMultiAspectRegressionBeer(Evaluator):
     def __init__(self, data_helper: DataHelper, use_train_data=False):
         self.data_helper = data_helper
         self.use_train_data = use_train_data
@@ -127,6 +125,8 @@ class EvaluatorMultiAspectRegression(Evaluator):
         logging.info("AVG ALL\t" + str(np.mean(np.array(acc))))
         logging.info("AVG ASP\t" + str(np.mean(np.array(acc)[1:])))
 
+        rating_true = rating_true / 2.0 / 4.0
+        rating_pred = rating_pred / 2.0 / 4.0
         mse = []
         for aspect_index in range(self.test_data.num_aspects):
             mse.append(mean_squared_error(y_true=rating_true[:, aspect_index], y_pred=rating_pred[:, aspect_index]))
@@ -139,14 +139,12 @@ class EvaluatorMultiAspectRegression(Evaluator):
 
 if __name__ == "__main__":
     experiment_dir = "E:\\Research\\Paper 02\\MASA_CNN\\runs\\" \
-                     "TripAdvisorDoc_Document_DocumentGRU_LSAAR1\\171023_1508812432\\"
-    checkpoint_steps = [3500, 4000, 4500, 5000, 5500, 6000, 6500, 7000, 7500, 8000]
+                     "BeerAdvocateDoc_Document_DocumentGRU_LSAAR1\\171023_1508816733\\"
+    checkpoint_steps = [5500, 6000, 6500, 7000, 7500, 8000, 8500, 9000, 9500, 10000]
 
-    dater = DataHelperHotelOne(embed_dim=300, target_doc_len=100, target_sent_len=64,
+    dater = DataHelperBeer(embed_dim=300, target_doc_len=64, target_sent_len=64,
                                aspect_id=None, doc_as_sent=False, doc_level=True)
 
     for step in checkpoint_steps:
-        # dater = DataHelperHotelOne(embed_dim=300, target_sent_len=1024, target_doc_len=None,
-        #                            aspect_id=1, doc_as_sent=True)
-        ev = EvaluatorMultiAspectRegression(data_helper=dater, use_train_data=False)
+        ev = EvaluatorMultiAspectRegressionBeer(data_helper=dater, use_train_data=False)
         ev.evaluate(experiment_dir=experiment_dir, checkpoint_step=step)

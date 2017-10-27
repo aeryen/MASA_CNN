@@ -251,6 +251,22 @@ class DataHelper(object):
         data.value = content_vector
         return data
 
+    def to_list_of_sent(self, data: DataObject):
+        sentence_data = data.value
+        sentence_count = data.doc_size
+        x = []
+        s_len_trim = []
+        index = 0
+        for sc in sentence_count:
+            one_review = sentence_data[index:index + sc]
+            x.append(one_review)
+            one_review_s_len = data.sentence_len_trim[index:index + sc]
+            s_len_trim.append(one_review_s_len)
+            index += sc
+        data.value = np.array(x)
+        data.sentence_len_trim = np.array(s_len_trim)
+        return data
+
     @staticmethod
     def batch_iter(data, batch_size, num_epochs, shuffle=True):
         """

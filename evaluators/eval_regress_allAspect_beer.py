@@ -5,7 +5,7 @@ import tensorflow as tf
 from sklearn.metrics import r2_score
 
 import data_helpers
-from data_helpers import data_helpers_allAspect_glove_beer
+from data_helpers import DataHelperBeer
 
 # Parameters
 # ==================================================
@@ -32,7 +32,7 @@ print("")
 
 # Load data. Load your own data here
 print("Loading data...")
-x_test, y_test, vocabulary, vocabulary_inv, s_count = data_helpers_allAspect_glove_beer.load_test_data()
+x_test, y_test, vocabulary, vocabulary_inv, s_count = DataHelperBeer.load_test_data()
 # y_test = np.argmax(y_test, axis=1)
 print(("Vocabulary size: {:d}".format(len(vocabulary))))
 print(("Test set size {:d}".format(len(y_test))))

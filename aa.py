@@ -7,11 +7,14 @@ from networks.CNNNetworkBuilder import CNNNetworkBuilder
 from trainers.TrainTask import TrainTask
 
 from data_helpers.DataHelperHotelOne import DataHelperHotelOne
+from data_helpers.DataHelperBeer import DataHelperBeer
 
 from evaluators.EvaluatorOrigin import EvaluatorOrigin
 from evaluators.EvaluatorMultiAspect import EvaluatorMultiAspect
 from evaluators.EvaluatorMultiAspectRegression import EvaluatorMultiAspectRegression
+from evaluators.EvaluatorMultiAspectRegressionBeer import EvaluatorMultiAspectRegressionBeer
 from evaluators.EvaluatorMultiAspectAAAB import EvaluatorMultiAspectAAAB
+
 
 def get_exp_logger(am):
     log_path = am.get_exp_log_path()
@@ -44,12 +47,13 @@ if __name__ == "__main__":
     # AAAB
     ################################################
 
-    data_name = "TripAdvisorDoc"
+    data_name = "BeerAdvocateDoc"
     input_comp_name = "Document"
     middle_comp_name = "DocumentGRU"
     output_comp_name = "LSAAR1"
 
-    am = ArchiveManager(data_name=data_name, input_name=input_comp_name, middle_name=middle_comp_name, output_name=output_comp_name)
+    am = ArchiveManager(data_name=data_name, input_name=input_comp_name, middle_name=middle_comp_name,
+                        output_name=output_comp_name)
     get_exp_logger(am)
     logging.warning('===================================================')
     logging.debug("Loading data...")
@@ -67,6 +71,16 @@ if __name__ == "__main__":
             ev = EvaluatorMultiAspectRegression(data_helper=dater)
         else:
             ev = EvaluatorMultiAspect(data_helper=dater)
+
+    elif data_name == "BeerAdvocateDoc":
+        dater = DataHelperBeer(embed_dim=300, target_doc_len=64, target_sent_len=64,
+                               aspect_id=None, doc_as_sent=False, doc_level=True)
+        if output_comp_name == "AAAB":
+            ev = EvaluatorMultiAspectAAAB(data_helper=dater)
+        if output_comp_name == "LSAAR1" or output_comp_name == "LSAAR2":
+            ev = EvaluatorMultiAspectRegressionBeer(data_helper=dater)
+        else:
+            ev = EvaluatorMultiAspect(data_helper=dater)
     else:
         raise NotImplementedError
 
@@ -77,17 +91,17 @@ if __name__ == "__main__":
                                                              data=dater.get_train_data(),
                                                              filter_size_lists=[[3, 4, 5]], num_filters=100,
                                                              batch_norm=None, elu=None,
-                                                             hidden_state_dim=256, fc=[])
+                                                             hidden_state_dim=384, fc=[])
         output_comp = CNNNetworkBuilder.get_output_component(output_name=output_comp_name,
                                                              input_comp=input_comp,
                                                              middle_comp=middle_comp,
-                                                             data=dater.get_train_data(), l2_reg=0.3, fc=[])
+                                                             data=dater.get_train_data(), l2_reg=0.1, fc=[])
 
         tt = TrainTask(data_helper=dater, am=am,
                        input_component=input_comp,
                        middle_component=middle_comp,
                        output_component=output_comp,
-                       batch_size=32, total_step=8000, evaluate_every=500, checkpoint_every=500, max_to_keep=10,
+                       batch_size=32, total_step=10000, evaluate_every=500, checkpoint_every=500, max_to_keep=10,
                        restore_path=None)
 
         start = timer()

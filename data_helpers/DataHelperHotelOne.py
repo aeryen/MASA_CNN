@@ -56,10 +56,10 @@ class DataHelperHotelOne(DataHelper):
             y = np.array(list(map(float, y)), dtype=np.int) - 1
             y_onehot = self.to_onehot(y, self.num_classes)
 
-        train_content = list(open(self.dataset_dir + self.content_file[load_test], "r").readlines())
-        train_content = [s.strip() for s in train_content]
+        content = list(open(self.dataset_dir + self.content_file[load_test], "r").readlines())
+        content = [s.strip() for s in content]
         # Split by words
-        x_text = [self.old_clean_str(sent) for sent in train_content]
+        x_text = [self.old_clean_str(sent) for sent in content]
 
         if self.doc_as_sent:
             x_text = DataHelperHotelOne.concat_to_doc(sent_list=x_text, sent_count=sent_count)
@@ -73,22 +73,6 @@ class DataHelperHotelOne(DataHelper):
         data.label_doc = y_onehot
         data.doc_size = sent_count
 
-        return data
-
-    def to_list_of_sent(self, data: DataObject):
-        sentence_data = data.value
-        sentence_count = data.doc_size
-        x = []
-        s_len_trim = []
-        index = 0
-        for sc in sentence_count:
-            one_review = sentence_data[index:index + sc]
-            x.append(one_review)
-            one_review_s_len = data.sentence_len_trim[index:index + sc]
-            s_len_trim.append(one_review_s_len)
-            index += sc
-        data.value = np.array(x)
-        data.sentence_len_trim = np.array(s_len_trim)
         return data
 
     def load_all_data(self):
