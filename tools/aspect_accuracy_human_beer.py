@@ -1,4 +1,5 @@
 from sklearn.metrics import classification_report
+from sklearn.metrics import f1_score
 import os
 import logging
 
@@ -51,8 +52,12 @@ def calc_aspect_f1(input_dir, step):
                                        labels=["appearance", "aroma", "taste", "palate"], digits=2)
     logging.info(result_fan)
 
-    return [result_yifan, result_fan]
+    yifan_f1 = f1_score(aspect_yifan[:1000], predict_aspect_list[:1000], average='macro')
+    fan_f1 = f1_score(aspect_fan[:1000], predict_aspect_list[:1000], average='macro')
+
+    return [yifan_f1, fan_f1]
 
 
-calc_aspect_f1(input_dir=input_dir, step=step)
+if __name__ == "__main__":
+    calc_aspect_f1(input_dir=input_dir, step=step)
 

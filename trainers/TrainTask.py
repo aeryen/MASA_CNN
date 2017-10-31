@@ -115,7 +115,8 @@ class TrainTask:
                                     output_comp=self.output_comp)
             graph_loss = cnn.loss
             graph_l2 = cnn.l2_sum
-            if type(self.output_comp) is LSAAR1Output:
+            if "R1" in type(self.output_comp).__name__ or "R2" in type(self.output_comp).__name__:
+                logging.info("plotting MSE instead of ACC")
                 graph_accuracy = cnn.sqr_diff_sum
                 aspect_accuracy = cnn.mse_aspects
             else:

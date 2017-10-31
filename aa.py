@@ -50,7 +50,7 @@ if __name__ == "__main__":
     data_name = "BeerAdvocateDoc"
     input_comp_name = "Document"
     middle_comp_name = "DocumentGRU"
-    output_comp_name = "LSAAR1"
+    output_comp_name = "LSAAR1Output_SentFCOverall"
 
     am = ArchiveManager(data_name=data_name, input_name=input_comp_name, middle_name=middle_comp_name,
                         output_name=output_comp_name)
@@ -95,13 +95,13 @@ if __name__ == "__main__":
         output_comp = CNNNetworkBuilder.get_output_component(output_name=output_comp_name,
                                                              input_comp=input_comp,
                                                              middle_comp=middle_comp,
-                                                             data=dater.get_train_data(), l2_reg=0.1, fc=[])
+                                                             data=dater.get_train_data(), l2_reg=0.2, fc=[])
 
         tt = TrainTask(data_helper=dater, am=am,
                        input_component=input_comp,
                        middle_component=middle_comp,
                        output_component=output_comp,
-                       batch_size=32, total_step=10000, evaluate_every=500, checkpoint_every=500, max_to_keep=10,
+                       batch_size=32, total_step=14000, evaluate_every=500, checkpoint_every=500, max_to_keep=10,
                        restore_path=None)
 
         start = timer()

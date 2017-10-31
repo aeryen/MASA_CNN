@@ -15,6 +15,7 @@ from networks.output_components.LSAAC1_INDIBIAS_Output import LSAAC1_INDIBIAS_Ou
 from networks.output_components.LSAAC1_MASK_Output import LSAAC1_MASK_Output
 from networks.output_components.LSAAC2Output import LSAAC2Output
 from networks.output_components.LSAAR1Output import LSAAR1Output
+from networks.output_components.LSAAR1Output_SentFCOverall import LSAAR1Output_SentFCOverall
 from networks.output_components.AllAspectAvgBaseline import AllAspectAvgBaseline
 
 
@@ -50,7 +51,7 @@ class CNNNetworkBuilder:
         self.accuracy = self.output_comp.accuracy
         self.aspect_accuracy = self.output_comp.aspect_accuracy
 
-        if type(self.output_comp) is LSAAR1Output:
+        if "R1" in type(self.output_comp).__name__ or "R2" in type(self.output_comp).__name__:
             self.sqr_diff_sum = self.output_comp.sqr_diff_sum
             self.mse_aspects = self.output_comp.mse_aspects
 
@@ -119,6 +120,9 @@ class CNNNetworkBuilder:
         elif "LSAAR1" == output_name:
             output_comp = LSAAR1Output(input_comp=input_comp, prev_comp=middle_comp, data=data,
                                        l2_reg_lambda=l2_reg, fc=fc)
+        elif "LSAAR1Output_SentFCOverall" == output_name:
+            output_comp = LSAAR1Output_SentFCOverall(input_comp=input_comp, prev_comp=middle_comp, data=data,
+                                                     l2_reg_lambda=l2_reg, fc=fc)
         elif "AAAB" == output_name:
             output_comp = AllAspectAvgBaseline(input_comp=input_comp, prev_comp=middle_comp, data=data,
                                                l2_reg_lambda=l2_reg)

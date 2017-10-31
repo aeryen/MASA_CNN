@@ -6,6 +6,7 @@ from sklearn.metrics import accuracy_score
 import tensorflow as tf
 import os
 import logging
+import matplotlib.pyplot as plt
 
 from data_helpers.Data import DataObject
 from evaluators.Evaluator import Evaluator
@@ -14,7 +15,7 @@ import utils.ArchiveManager as AM
 from data_helpers.DataHelperBeer import DataHelperBeer
 from tools.aspect_accuracy_human_beer import calc_aspect_f1
 
-aspect_name = ["overall", "appearance", "taste", "palate", "aroma"]
+aspect_name = ["none", "appearance", "taste", "palate", "aroma"]
 
 
 class EvaluatorMultiAspectRegressionBeer(Evaluator):
@@ -27,8 +28,10 @@ class EvaluatorMultiAspectRegressionBeer(Evaluator):
             self.test_data = self.data_helper.get_train_data()
 
         self.eval_log = None
+        self.result_dir = None
 
-    def evaluate(self, experiment_dir, checkpoint_step, doc_acc=True, do_is_training=True):
+    def evaluate(self, experiment_dir, checkpoint_step, doc_acc=True, do_is_training=True,
+                 global_mse_all=None, global_asp_f1=None):
         if checkpoint_step is not None:
             checkpoint_file = experiment_dir + "/checkpoints/" + "model-" + str(checkpoint_step)
         else:
@@ -102,9 +105,9 @@ class EvaluatorMultiAspectRegressionBeer(Evaluator):
 
                 rating_pred = all_rating_score
                 rating_true = np.argmax(self.test_data.label_instance, axis=2)
-                clean_aspect_max = np.argmax(clean_aspect_dist[:, 1:], axis=1)  # TODO limit aspect here
+                clean_aspect_max = np.argmax(clean_aspect_dist[:, :], axis=1)  # TODO limit aspect here
 
-                sentence_aspect_names = [aspect_name[i+1] for i in clean_aspect_max]
+                sentence_aspect_names = [aspect_name[i] for i in clean_aspect_max]  # TODO limit aspect here
 
         with open(self.result_dir + '\\' + str(checkpoint_step) + '_aspect_rating.out', 'wb') as f:
             np.savetxt(f, rating_pred, fmt='%d', delimiter='\t')
@@ -120,31 +123,65 @@ class EvaluatorMultiAspectRegressionBeer(Evaluator):
         logging.info("ASP\t" + '\t'.join(map(str, range(self.test_data.num_aspects))))
         acc = []
         for aspect_index in range(self.test_data.num_aspects):
-            acc.append(accuracy_score(y_true=rating_true[:, aspect_index], y_pred=np.round(rating_pred[:, aspect_index])))
+            acc.append(
+                accuracy_score(y_true=rating_true[:, aspect_index], y_pred=np.round(rating_pred[:, aspect_index])))
         logging.info("ACC\t" + "\t".join(map(str, acc)))
         logging.info("AVG ALL\t" + str(np.mean(np.array(acc))))
         logging.info("AVG ASP\t" + str(np.mean(np.array(acc)[1:])))
 
-        rating_true = rating_true / 2.0 / 4.0
-        rating_pred = rating_pred / 2.0 / 4.0
+        rating_true = rating_true / 2.0
+        rating_pred = rating_pred / 2.0
         mse = []
         for aspect_index in range(self.test_data.num_aspects):
             mse.append(mean_squared_error(y_true=rating_true[:, aspect_index], y_pred=rating_pred[:, aspect_index]))
         logging.info("MSE\t" + "\t".join(map(str, mse)))
         logging.info("AVG ALL\t" + str(np.mean(np.array(mse))))
         logging.info("AVG ASP\t" + str(np.mean(np.array(mse)[1:])))
+        if global_mse_all is not None:
+            global_mse_all.append(np.mean(np.array(mse)))
 
-        calc_aspect_f1(input_dir=experiment_dir, step=checkpoint_step)
+        rating_true = rating_true / 4.0
+        rating_pred = rating_pred / 4.0
+        mse = []
+        for aspect_index in range(self.test_data.num_aspects):
+            mse.append(mean_squared_error(y_true=rating_true[:, aspect_index], y_pred=rating_pred[:, aspect_index]))
+        logging.info("MSE [01]\t" + "\t".join(map(str, mse)))
+        logging.info("AVG ALL [01]\t" + str(np.mean(np.array(mse))))
+        logging.info("AVG ASP [01]\t" + str(np.mean(np.array(mse)[1:])))
+
+        yifan_f1, fan_f1 = calc_aspect_f1(input_dir=experiment_dir, step=checkpoint_step)
+        if global_asp_f1 is not None:
+            global_asp_f1.append(yifan_f1)
 
 
 if __name__ == "__main__":
     experiment_dir = "E:\\Research\\Paper 02\\MASA_CNN\\runs\\" \
-                     "BeerAdvocateDoc_Document_DocumentGRU_LSAAR1\\171023_1508816733\\"
-    checkpoint_steps = [5500, 6000, 6500, 7000, 7500, 8000, 8500, 9000, 9500, 10000]
+                     "BeerAdvocateDoc_Document_DocumentGRU_LSAAR1Output_SentFCOverall\\171029_1509330106\\"
+    # checkpoint_steps = [5500, 6000, 6500, 7000, 7500, 8000, 8500, 9000, 9500, 10000]
+    checkpoint_steps = [8500, 9000, 9500, 10000, 10500, 11000, 11500, 12000, 12500, 13000]
 
     dater = DataHelperBeer(embed_dim=300, target_doc_len=64, target_sent_len=64,
-                               aspect_id=None, doc_as_sent=False, doc_level=True)
+                           aspect_id=None, doc_as_sent=False, doc_level=True)
+
+    global_mse_all = []
+    global_asp_f1 = []
 
     for step in checkpoint_steps:
         ev = EvaluatorMultiAspectRegressionBeer(data_helper=dater, use_train_data=False)
-        ev.evaluate(experiment_dir=experiment_dir, checkpoint_step=step)
+        ev.evaluate(experiment_dir=experiment_dir, checkpoint_step=step,
+                    global_mse_all=global_mse_all, global_asp_f1=global_asp_f1)
+
+    fig, ax1 = plt.subplots()
+    ax1.plot(checkpoint_steps, global_mse_all, 'b-')
+    ax1.set_xlabel('steps')
+    ax1.set_ylabel('MSE', color='b')
+    ax1.tick_params('y', colors='b')
+    plt.gca().invert_yaxis()
+
+    ax2 = ax1.twinx()
+    ax2.plot(checkpoint_steps, global_asp_f1, 'r-')
+    ax2.set_ylabel('ASP', color='r')
+    ax2.tick_params('y', colors='r')
+
+    fig.tight_layout()
+    plt.show()

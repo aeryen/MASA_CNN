@@ -4,7 +4,7 @@ import logging
 from data_helpers.Data import DataObject
 
 
-class LSAAR1Output(object):
+class LSAAR1Output_SentFCOverall(object):
     def __init__(self, input_comp, prev_comp, data: DataObject, l2_reg_lambda, fc=[]):
         self.label = input_comp.input_y
         self.s_count = input_comp.input_s_count
@@ -33,19 +33,19 @@ class LSAAR1Output(object):
                 if fc:
                     Wh_overall = tf.get_variable(
                         "overall_Wh",
-                        shape=[self.review_feature_size, fc[0]],
+                        shape=[self.sentence_feature_size, fc[0]],
                         initializer=tf.contrib.layers.xavier_initializer())
                     bh_overall = tf.Variable(tf.constant(0.1, shape=[fc[0]]), name="bh")
                     self.l2_sum += tf.nn.l2_loss(Wh_overall)
 
-                    self.overall_hid_layer = tf.nn.xw_plus_b(self.review_features, Wh_overall, bh_overall,
+                    self.overall_hid_layer = tf.nn.xw_plus_b(self.sent_features, Wh_overall, bh_overall,
                                                              name="overall_hid")
                     self.overall_hid_layer = tf.nn.elu(self.overall_hid_layer, name='overall_hid_elu')
 
                     self.overall_hidden_feature_size = fc[0]
                 else:
-                    self.overall_hid_layer = self.review_features
-                    self.overall_hidden_feature_size = self.review_feature_size
+                    self.overall_hid_layer = self.sent_features
+                    self.overall_hidden_feature_size = self.sentence_feature_size
                 W_overall = tf.get_variable(
                     "W_all",
                     shape=[self.overall_hidden_feature_size, 1],
@@ -53,14 +53,18 @@ class LSAAR1Output(object):
                 b_overall = tf.Variable(tf.constant(0.1, shape=[1]), name="b_all")
                 self.l2_sum += tf.nn.l2_loss(W_overall)
 
-                # overall_scores.shape = [review, 5]
-                self.overall_scores = tf.nn.xw_plus_b(self.overall_hid_layer, W_overall, b_overall,
-                                                      name="scores_all_un_div")
-                print("scores_all_un_div " + str(self.overall_scores.get_shape()))
+                # overall_scores.shape = [review, sent?]
+                self.sentence_scores = tf.nn.xw_plus_b(self.overall_hid_layer, W_overall, b_overall,
+                                                       name="scores_all_un_div")
+                print("scores_all_un_div " + str(self.sentence_scores.get_shape()))
 
-                self.overall_scores = tf.div(self.overall_scores,
-                                             tf.expand_dims(self.s_count, [-1]),
-                                             name="scores_all")
+                self.review_sentence_overall_score = tf.reshape(self.sentence_scores, [-1, data.target_doc_len])
+
+                self.overall_scores = tf.reduce_sum(self.review_sentence_overall_score, axis=1)
+
+                self.overall_scores = tf.expand_dims(tf.div(self.overall_scores,
+                                                            self.s_count,
+                                                            name="scores_all"), axis=-1)
 
             with tf.name_scope("aspect"):
                 if fc:
@@ -87,10 +91,9 @@ class LSAAR1Output(object):
                 self.l2_sum += tf.nn.l2_loss(W)
                 # [batch_size * sentence]
                 self.rating_score = tf.nn.xw_plus_b(self.rating_layer, W, b, name="score_asp")
-                # scores = tf.reshape(scores, [-1], name="score_a" + str(aspect_index))
                 print(("self.aspect_rating_score " + str(self.rating_score.get_shape())))
                 #
-                self.rating_score = 8.0 * tf.sigmoid(self.rating_score, name="score_asp_sigmoid")
+                # self.rating_score = 4.0 * tf.sigmoid(self.rating_score, name="score_asp_sigmoid")
 
         with tf.name_scope("related"):
             if fc:
