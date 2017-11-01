@@ -7,6 +7,7 @@ import tensorflow as tf
 import os
 import logging
 import matplotlib.pyplot as plt
+import pickle
 
 from data_helpers.Data import DataObject
 from evaluators.Evaluator import Evaluator
@@ -59,7 +60,7 @@ class VisualizerRegressionBeer(Evaluator):
             self.result_dir = experiment_dir + "\\train_data_output\\"
             os.makedirs(self.result_dir)
 
-        Evaluator.get_exp_logger(exp_dir=self.result_dir, checkpoing_file_name=file_name)
+        VisualizerRegressionBeer.get_exp_logger(exp_dir=self.result_dir, checkpoing_file_name=file_name)
 
         logging.info("Evaluating: " + __file__)
         logging.info("Test for prob: " + self.data_helper.problem_name)
@@ -127,22 +128,26 @@ class VisualizerRegressionBeer(Evaluator):
                                                   input_s_len: s_len_batch,
                                                   input_s_count: s_cnt_batch,
                                                   dropout_keep_prob: 1.0})
-                    logging.info(self.test_data.raw[
+                    logging.info("\n")
+
+                    logging.info("\n".join(self.test_data.raw[
                                  self.test_data.target_doc_len * instance_index:
                                  self.test_data.target_doc_len * instance_index +
                                  self.test_data.doc_size_trim[instance_index]
-                                 ])
+                                 ]))
 
-                    rating_true = np.argmax(y_test_batch, axis=1)
+                    rating_true = np.argmax(y_test_batch, axis=2)
                     logging.info("TRUE LABLE: " + str(rating_true))
 
-                    logging.info("o_score_overall_undiv: \n" + str(o_score_overall_undiv[:self.test_data.doc_size_trim[instance_index]+5]))
+                    logging.info("o_score_overall_undiv: \n" + str(
+                        o_score_overall_undiv[:self.test_data.doc_size_trim[instance_index] + 5]))
                     logging.info("CLEAN o_score_overall_undiv: \n" +
                                  str(o_score_overall_undiv[:self.test_data.doc_size_trim[instance_index]]))
 
                     logging.info("o_score_overall_rev: \n" + str(o_score_overall_rev))
 
-                    logging.info("o_score_asp_sent: \n" + str(o_score_asp_sent[:self.test_data.doc_size_trim[instance_index]+5]))
+                    logging.info("o_score_asp_sent: \n" + str(
+                        o_score_asp_sent[:self.test_data.doc_size_trim[instance_index] + 5]))
                     logging.info("CLEAN o_score_asp_sent: \n" +
                                  str(o_score_asp_sent[:self.test_data.doc_size_trim[instance_index]]))
 
@@ -153,7 +158,8 @@ class VisualizerRegressionBeer(Evaluator):
                     sentence_aspect_names = [aspect_name[i] for i in clean_aspect_max]  # TODO limit aspect here
                     logging.info("sentence_aspect_names: \n" + str(sentence_aspect_names))
 
-                    logging.info("o_aspect_scaled: \n" + str(o_aspect_scaled[:self.test_data.doc_size_trim[instance_index]+5]))
+                    logging.info(
+                        "o_aspect_scaled: \n" + str(o_aspect_scaled[:self.test_data.doc_size_trim[instance_index] + 5]))
                     logging.info("CLEAN o_aspect_scaled: \n" +
                                  str(o_aspect_scaled[:self.test_data.doc_size_trim[instance_index]]))
 
@@ -172,8 +178,10 @@ if __name__ == "__main__":
     # checkpoint_steps = [5500, 6000, 6500, 7000, 7500, 8000, 8500, 9000, 9500, 10000]
     checkpoint_steps = [8500, 9000, 9500, 10000, 10500, 11000, 11500, 12000, 12500, 13000]
 
-    dater = DataHelperBeer(embed_dim=300, target_doc_len=64, target_sent_len=64,
-                           aspect_id=None, doc_as_sent=False, doc_level=True)
+    # dater = DataHelperBeer(embed_dim=300, target_doc_len=64, target_sent_len=64,
+    #                        aspect_id=None, doc_as_sent=False, doc_level=True)
+    # pickle.dump(dater, open("beer6464.pickle", "wb"))
+    dater = pickle.load(open("beer6464.pickle", "rb"))
 
     global_mse_all = []
     global_asp_f1 = []
