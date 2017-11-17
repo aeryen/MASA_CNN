@@ -11,12 +11,11 @@ from evaluators.Evaluator import Evaluator
 from data_helpers.DataHelpers import DataHelper
 import utils.ArchiveManager as AM
 from data_helpers.DataHelperBeer import DataHelperBeer
-from tools.aspect_accuracy_human_beer import calc_aspect_f1
 
 aspect_name = ["none", "appearance", "taste", "palate", "aroma"]
 
 
-class EvaluatorMultiAspectRegressionBeer(Evaluator):
+class EvaluatorMultiAspectAAABRegressionBeer(Evaluator):
     def __init__(self, data_helper: DataHelper, use_train_data=False):
         self.data_helper = data_helper
         self.use_train_data = use_train_data
@@ -68,7 +67,6 @@ class EvaluatorMultiAspectRegressionBeer(Evaluator):
                 dropout_keep_prob = graph.get_operation_by_name("dropout_keep_prob").outputs[0]
 
                 g_output_scores = graph.get_operation_by_name("output/output_scores").outputs[0]
-                g_softmax_related = graph.get_operation_by_name("related/softmax_related").outputs[0]
 
                 # Generate batches for one epoch
                 x_batches = DataHelper.batch_iter(self.test_data.value, 32, 1, shuffle=False)
@@ -78,43 +76,24 @@ class EvaluatorMultiAspectRegressionBeer(Evaluator):
 
                 # Collect the predictions here
                 all_rating_score = []
-                all_aspect_dist = []
                 for x_test_batch, y_test_batch, s_len_batch, s_cnt_batch in \
                         zip(x_batches, y_batches, s_len_batches, s_count_batches):
-                    [o_output_scores, o_softmax_related] = sess.run([g_output_scores, g_softmax_related],
-                                                                    {input_x: x_test_batch,
-                                                                     input_y: y_test_batch,
-                                                                     input_s_len: s_len_batch,
-                                                                     input_s_count: s_cnt_batch,
-                                                                     dropout_keep_prob: 1.0})
+                    [o_output_scores] = sess.run([g_output_scores],
+                                                 {input_x: x_test_batch,
+                                                  input_y: y_test_batch,
+                                                  input_s_len: s_len_batch,
+                                                  input_s_count: s_cnt_batch,
+                                                  dropout_keep_prob: 1.0})
                     # [reviews aspects scores]
                     all_rating_score.append(o_output_scores)
-                    all_aspect_dist.append(o_softmax_related)
 
                 all_rating_score = np.concatenate(all_rating_score, axis=0)
-                all_aspect_dist = np.concatenate(all_aspect_dist, axis=0)
-
-                clean_aspect_dist = []
-                for i in range(self.test_data.num_instance):
-                    clean_aspect_dist.append(
-                        all_aspect_dist[i * self.test_data.target_doc_len:
-                        i * self.test_data.target_doc_len + self.test_data.doc_size_trim[i]])
-                clean_aspect_dist = np.concatenate(clean_aspect_dist, axis=0)
 
                 rating_pred = all_rating_score
                 rating_true = np.argmax(self.test_data.label_instance, axis=2)
-                clean_aspect_max = np.argmax(clean_aspect_dist[:, :], axis=1)  # TODO limit aspect here
-
-                sentence_aspect_names = [aspect_name[i] for i in clean_aspect_max]  # TODO limit aspect here
 
         with open(self.result_dir + '\\' + str(checkpoint_step) + '_aspect_rating.out', 'wb') as f:
             np.savetxt(f, rating_pred, fmt='%d', delimiter='\t')
-        with open(self.result_dir + '\\' + str(checkpoint_step) + '_aspect_dist.out', 'wb') as f:
-            np.savetxt(f, clean_aspect_dist, fmt='%1.5f', delimiter='\t')
-        # np.savetxt(experiment_dir + '/aspect_related.out', clean_aspect_max, fmt='%1.0f')
-        with open(self.result_dir + '\\' + str(checkpoint_step) + '_aspect_related_name.out', 'w') as aspect_name_file:
-            for item in sentence_aspect_names:
-                aspect_name_file.write("%s\n" % item)
 
         logging.info("Total number of OUTPUT instances: " + str(len(rating_pred)))
 
@@ -147,10 +126,6 @@ class EvaluatorMultiAspectRegressionBeer(Evaluator):
         logging.info("AVG ALL [01]\t" + str(np.mean(np.array(mse))))
         logging.info("AVG ASP [01]\t" + str(np.mean(np.array(mse)[1:])))
 
-        yifan_f1, fan_f1 = calc_aspect_f1(input_dir=experiment_dir, step=checkpoint_step)
-        if global_asp_f1 is not None:
-            global_asp_f1.append(yifan_f1)
-
 
 if __name__ == "__main__":
     experiment_dir = "E:\\Research\\Paper 02\\MASA_CNN\\runs\\" \
@@ -168,21 +143,7 @@ if __name__ == "__main__":
     global_mse_all = []
     global_asp_f1 = []
     for step in checkpoint_steps:
-        ev = EvaluatorMultiAspectRegressionBeer(data_helper=dater, use_train_data=False)
-        ev.evaluate(experiment_dir=experiment_dir, checkpoint_step=step,
-                    global_mse_all=global_mse_all, global_asp_f1=global_asp_f1)
-
-    fig, ax1 = plt.subplots()
-    ax1.plot(checkpoint_steps, global_mse_all, 'b-')
-    ax1.set_xlabel('steps')
-    ax1.set_ylabel('MSE', color='b')
-    ax1.tick_params('y', colors='b')
-    plt.gca().invert_yaxis()
-
-    ax2 = ax1.twinx()
-    ax2.plot(checkpoint_steps, global_asp_f1, 'r-')
-    ax2.set_ylabel('ASP', color='r')
-    ax2.tick_params('y', colors='r')
-
-    fig.tight_layout()
-    plt.show()
+        # dater = DataHelperHotelOne(embed_dim=300, target_sent_len=1024, target_doc_len=None,
+        #                            aspect_id=1, doc_as_sent=True)
+        ev = EvaluatorMultiAspectAAABRegressionBeer(data_helper=dater)
+        ev.evaluate(experiment_dir=experiment_dir, checkpoint_step=step)

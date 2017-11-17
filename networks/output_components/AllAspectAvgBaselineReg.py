@@ -33,9 +33,9 @@ class AllAspectAvgBaseline(object):
                     #     "W_asp"+str(aspect_index),
                     #     shape=[self.prev_layer_size, self.num_classes],
                     #     initializer=tf.contrib.layers.xavier_initializer())
-                    W = tf.Variable(tf.truncated_normal([self.prev_layer_size, self.num_classes], stddev=0.1),
+                    W = tf.Variable(tf.truncated_normal([self.prev_layer_size, 1], stddev=0.1),
                                     name="W_asp" + str(aspect_index))
-                    b = tf.Variable(tf.constant(0.1, shape=[self.num_classes]), name="b_asp" + str(aspect_index))
+                    b = tf.Variable(tf.constant(0.1, shape=[1]), name="b_asp" + str(aspect_index))
                     self.l2_sum += tf.nn.l2_loss(W)
                     # [batch_size * sentence]
                     aspect_rating_score = tf.nn.xw_plus_b(self.prev_output, W, b, name="score_asp")
@@ -49,8 +49,7 @@ class AllAspectAvgBaseline(object):
             print(("scaled_aspect " + str(scaled_aspect.get_shape())))
 
             # TODO VERY CAREFUL HERE
-            batch_sent_rating_aspect = tf.reshape(scaled_aspect, [-1, self.document_length,
-                                                                  self.num_aspects, self.num_classes],
+            batch_sent_rating_aspect = tf.reshape(scaled_aspect, [-1, self.document_length, self.num_aspects],
                                                   name="output_score")
             print(("batch_sent_rating_aspect " + str(batch_sent_rating_aspect.get_shape())))
 
