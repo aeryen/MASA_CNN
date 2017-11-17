@@ -128,19 +128,19 @@ class VisualizerRegressionBeer(Evaluator):
                                                   input_s_len: s_len_batch,
                                                   input_s_count: s_cnt_batch,
                                                   dropout_keep_prob: 1.0})
-                    logging.info("\n")
+                    logging.info("\n\n")
 
-                    logging.info("\n".join(self.test_data.raw[
-                                 self.test_data.target_doc_len * instance_index:
-                                 self.test_data.target_doc_len * instance_index +
-                                 self.test_data.doc_size_trim[instance_index]
-                                 ]))
+                    for i in range(self.test_data.doc_size_trim[instance_index]):
+                        logging.info(str(i) + "\t" +
+                                     " ".join(self.test_data.raw[
+                                         self.test_data.target_doc_len * instance_index + i
+                                         ]))
 
                     rating_true = np.argmax(y_test_batch, axis=2)
                     logging.info("TRUE LABLE: " + str(rating_true))
 
                     logging.info("o_score_overall_undiv: \n" + str(
-                        o_score_overall_undiv[:self.test_data.doc_size_trim[instance_index] + 5]))
+                        o_score_overall_undiv[:self.test_data.doc_size_trim[instance_index] + 5].squeeze()))
                     logging.info("CLEAN o_score_overall_undiv: \n" +
                                  str(o_score_overall_undiv[:self.test_data.doc_size_trim[instance_index]]))
 
@@ -174,9 +174,9 @@ class VisualizerRegressionBeer(Evaluator):
 
 if __name__ == "__main__":
     experiment_dir = "E:\\Research\\Paper 02\\MASA_CNN\\runs\\" \
-                     "BeerAdvocateDoc_Document_DocumentGRU_LSAAR1Output_SentFCOverall\\171029_1509330106\\"
+                     "BeerAdvocateDoc_Document_DocumentCNN_LSAAR1Output_SentFCOverall\\171115_1510752233\\"
     # checkpoint_steps = [5500, 6000, 6500, 7000, 7500, 8000, 8500, 9000, 9500, 10000]
-    checkpoint_steps = [8500, 9000, 9500, 10000, 10500, 11000, 11500, 12000, 12500, 13000]
+    checkpoint_steps = [20000]
 
     # dater = DataHelperBeer(embed_dim=300, target_doc_len=64, target_sent_len=64,
     #                        aspect_id=None, doc_as_sent=False, doc_level=True)

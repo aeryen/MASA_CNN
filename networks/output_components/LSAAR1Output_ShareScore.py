@@ -4,13 +4,10 @@ import logging
 from data_helpers.Data import DataObject
 
 
-class LSAAR1Output_SentFCOverall(object):
+class LSAAR1Output_ShareScore(object):
     def __init__(self, input_comp, prev_comp, data: DataObject, l2_reg_lambda, fc=[]):
         self.label = input_comp.input_y
-        self.s_len = input_comp.input_s_len
         self.s_count = input_comp.input_s_count
-        self.dropout = input_comp.dropout_keep_prob
-
         self.prev_layer = prev_comp.last_layer
         self.sentence_feature_size = self.prev_layer.get_shape()[-1].value
         self.review_feature_size = data.target_doc_len * self.sentence_feature_size
@@ -56,55 +53,25 @@ class LSAAR1Output_SentFCOverall(object):
                 self.l2_sum += tf.nn.l2_loss(W_overall)
 
                 # overall_scores.shape = [review, sent?]
-                self.sentence_scores = tf.nn.xw_plus_b(self.overall_hid_layer, W_overall, b_overall,
-                                                       name="scores_all_un_div")
-                print("scores_all_un_div " + str(self.sentence_scores.get_shape()))
+                self.sent_overall_score = tf.nn.xw_plus_b(self.overall_hid_layer, W_overall, b_overall,
+                                                          name="scores_all_un_div")
+                print("scores_all_un_div " + str(self.sent_overall_score.get_shape()))
 
-                self.review_sentence_overall_score = tf.reshape(self.sentence_scores, [-1, data.target_doc_len])
-                # self.review_sentence_overall_score = tf.div(self.review_sentence_overall_score,
-                #                                             tf.maximum(self.s_len, 1.0))
+                self.review_sentence_overall_score = tf.reshape(self.sent_overall_score, [-1, data.target_doc_len])
                 self.overall_scores = tf.reduce_sum(self.review_sentence_overall_score, axis=1)
-                self.overall_scores = tf.expand_dims(tf.div(self.overall_scores, self.s_count, name="scores_all"),
-                                                     axis=-1)
+                self.overall_scores = tf.expand_dims(tf.div(self.overall_scores,
+                                                            self.s_count,
+                                                            name="scores_all"), axis=-1)
 
             with tf.name_scope("aspect"):
-                if fc and fc[0] > 0:
-                    Wh = tf.get_variable(
-                        "rating_Wh",
-                        shape=[self.sentence_feature_size, fc[0]],
-                        initializer=tf.contrib.layers.xavier_initializer())
-                    bh = tf.Variable(tf.constant(0.1, shape=[fc[0]]), name="bh")
-                    self.l2_sum += tf.nn.l2_loss(Wh)
-
-                    self.rating_layer = tf.nn.xw_plus_b(self.sent_features, Wh, bh, name="rating_hid")
-                    # self.rating_layer = tf.nn.sigmoid(self.rating_layer, name='rating_hid_elu')
-
-                    self.hidden_feature_size = fc[0]
-                else:
-                    self.rating_layer = self.sent_features
-                    self.hidden_feature_size = self.sentence_feature_size
-
-                W = tf.get_variable(
-                    "W_asp",
-                    shape=[self.hidden_feature_size, 1],
-                    initializer=tf.contrib.layers.xavier_initializer())
-                b = tf.Variable(tf.constant(0.1, shape=[1]), name="b_asp")
-                self.l2_sum += tf.nn.l2_loss(W)
-                # [batch_size * sentence]
-                self.rating_score = tf.nn.xw_plus_b(self.rating_layer, W, b, name="score_asp")
-                print(("self.aspect_rating_score " + str(self.rating_score.get_shape())))
-
-                self.rating_score = tf.reshape(self.rating_score, [-1, data.target_doc_len])
-                # self.rating_score = tf.div(self.rating_score, tf.maximum(self.s_len, 1.0))
-                self.rating_score = tf.reshape(self.rating_score, [-1, 1], name="score_asp_div")
+                self.sent_aspect_score = tf.identity(self.sent_overall_score, name="score_asp")
+                print(("self.aspect_rating_score " + str(self.sent_aspect_score.get_shape())))
                 #
                 # self.rating_score = 4.0 * tf.sigmoid(self.rating_score, name="score_asp_sigmoid")
 
         with tf.name_scope("related"):
-            # logging.info("USING CNN BUILD IN DROP NOW")
-            logging.info("TRUE RELATE DROP, disabled middle layer drop")
-            logging.info("sent_feat_related_drop = tf.nn.dropout(self.sent_features, self.dropout)")
-            sent_feat_related_drop = tf.nn.dropout(self.sent_features, self.dropout, name="sent_feat_related_drop")
+            logging.info("sent_feat_related_drop = tf.nn.dropout(self.sent_features, 0.7)")
+            sent_feat_related_drop = tf.nn.dropout(self.sent_features, 0.7, name="sent_feat_related_drop")
 
             if fc and fc[1] > 0:
                 Wh = tf.get_variable(
@@ -112,7 +79,7 @@ class LSAAR1Output_SentFCOverall(object):
                     shape=[self.sentence_feature_size, fc[1]],
                     initializer=tf.contrib.layers.xavier_initializer())
                 bh = tf.Variable(tf.constant(0.1, shape=[fc[1]]), name="bh")
-                self.l2_sum += 0.2 * tf.nn.l2_loss(Wh)
+                self.l2_sum += tf.nn.l2_loss(Wh)
 
                 self.aspect_layer = tf.nn.xw_plus_b(sent_feat_related_drop, Wh, bh, name="relate_hid")
                 self.aspect_layer = tf.nn.elu(self.aspect_layer, name='relate_hid_elu')
@@ -127,7 +94,7 @@ class LSAAR1Output_SentFCOverall(object):
                 shape=[self.hidden_feature_size, self.num_aspects],
                 initializer=tf.contrib.layers.xavier_initializer())
             b = tf.Variable(tf.constant(0.1, shape=[self.num_aspects]), name="b_r")
-            self.l2_sum += 0.2 * tf.nn.l2_loss(W)
+            self.l2_sum += tf.nn.l2_loss(W)
 
             self.attri_scores = tf.nn.xw_plus_b(self.aspect_layer, W, b, name="scores_related")
             # [batch_size * sentence, num_aspects]
@@ -137,7 +104,7 @@ class LSAAR1Output_SentFCOverall(object):
         # Final (unnormalized) scores and predictions
         scaled_aspect = []
         with tf.name_scope("output"):
-            aspect_rating_score = tf.tile(self.rating_score, [1, self.num_aspects - 1])
+            aspect_rating_score = tf.tile(self.sent_aspect_score, [1, self.num_aspects - 1])
             print(("self.aspect_rating_score " + str(aspect_rating_score.get_shape())))
 
             prob_aspect_sent = self.attri_dist[:, 1:]

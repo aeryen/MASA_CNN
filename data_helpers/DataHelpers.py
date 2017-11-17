@@ -25,9 +25,7 @@ class DataHelper(object):
         logging.info("DataHelpers: %s is %s", "target_sent_len", target_sent_len)
 
         self.train_data = None
-        self.train_data: DataObject
         self.test_data = None
-        self.test_data: DataObject
         self.num_classes = None
         self.vocab = None
         self.vocab_inv = None

@@ -1,4 +1,5 @@
 import logging
+from enum import Enum
 
 from data_helpers.Data import DataObject
 
@@ -16,7 +17,20 @@ from networks.output_components.LSAAC1_MASK_Output import LSAAC1_MASK_Output
 from networks.output_components.LSAAC2Output import LSAAC2Output
 from networks.output_components.LSAAR1Output import LSAAR1Output
 from networks.output_components.LSAAR1Output_SentFCOverall import LSAAR1Output_SentFCOverall
+from networks.output_components.LSAAR1Output_ShareScore import LSAAR1Output_ShareScore
 from networks.output_components.AllAspectAvgBaseline import AllAspectAvgBaseline
+
+
+class OutputNNType(Enum):
+    OriginOutput = 0
+    LSAAC1Output = 1
+    LSAAC1_INDIBIAS_Output = 2
+    LSAAC1_MASK_Output = 3
+    LSAAC2Output = 4
+    LSAAR1Output = 5
+    LSAAR1Output_SentFCOverall = 6
+    LSAAR1Output_ShareScore = 7
+    AAAB = 100
 
 
 class CNNNetworkBuilder:
@@ -99,31 +113,34 @@ class CNNNetworkBuilder:
         return middle_comp
 
     @staticmethod
-    def get_output_component(output_name, input_comp, middle_comp, data, l2_reg=0.0, fc=[]):
+    def get_output_component(output_type: OutputNNType, input_comp, middle_comp, data, l2_reg=0.0, fc=[]):
         logging.info("setting: %s is %s", "l2_reg", l2_reg)
         logging.info("setting: %s is %s", "OUTPUT_FC", fc)
 
-        if "OriginOutput" == output_name:
+        if output_type is OutputNNType.OriginOutput:
             output_comp = OriginOutput(input_comp=input_comp, prev_comp=middle_comp, data=data, l2_reg_lambda=l2_reg)
-        elif "LSAAC1" == output_name:
+        elif output_type is OutputNNType.LSAAC1Output:
             output_comp = LSAAC1Output(input_comp=input_comp, prev_comp=middle_comp, data=data,
                                        l2_reg_lambda=l2_reg, fc=fc)
-        elif "LSAAC1_INDIBIAS" == output_name:
+        elif output_type is OutputNNType.LSAAC1_INDIBIAS_Output:
             output_comp = LSAAC1_INDIBIAS_Output(input_comp=input_comp, prev_comp=middle_comp, data=data,
                                                  l2_reg_lambda=l2_reg, fc=fc)
-        elif "LSAAC1_MASK" == output_name:
+        elif output_type is OutputNNType.LSAAC1_MASK_Output:
             output_comp = LSAAC1_MASK_Output(input_comp=input_comp, prev_comp=middle_comp, data=data,
                                              l2_reg_lambda=l2_reg, fc=fc)
-        elif "LSAAC2" == output_name:
+        elif output_type is OutputNNType.LSAAC2Output:
             output_comp = LSAAC2Output(input_comp=input_comp, prev_comp=middle_comp, data=data,
                                        l2_reg_lambda=l2_reg, fc=fc)
-        elif "LSAAR1" == output_name:
+        elif output_type is OutputNNType.LSAAR1Output:
             output_comp = LSAAR1Output(input_comp=input_comp, prev_comp=middle_comp, data=data,
                                        l2_reg_lambda=l2_reg, fc=fc)
-        elif "LSAAR1Output_SentFCOverall" == output_name:
+        elif output_type is OutputNNType.LSAAR1Output_SentFCOverall:
             output_comp = LSAAR1Output_SentFCOverall(input_comp=input_comp, prev_comp=middle_comp, data=data,
                                                      l2_reg_lambda=l2_reg, fc=fc)
-        elif "AAAB" == output_name:
+        elif output_type is OutputNNType.LSAAR1Output_ShareScore:
+            output_comp = LSAAR1Output_ShareScore(input_comp=input_comp, prev_comp=middle_comp, data=data,
+                                                  l2_reg_lambda=l2_reg, fc=fc)
+        elif output_type is OutputNNType.AAAB:
             output_comp = AllAspectAvgBaseline(input_comp=input_comp, prev_comp=middle_comp, data=data,
                                                l2_reg_lambda=l2_reg)
         else:

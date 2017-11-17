@@ -37,11 +37,12 @@ class DocumentGRU(object):
 
         with tf.name_scope("rnn"):
             cell = tf.nn.rnn_cell.GRUCell(self.hidden_state_dim)
+
             # logging.warning("cell = tf.nn.rnn_cell.BasicLSTMCell(self.hidden_state_dim)")
             # cell = tf.nn.rnn_cell.BasicLSTMCell(self.hidden_state_dim)
 
-            logging.warning("DropoutWrapper(cell=cell, output_keep_prob=self.dropout)")
-            cell = tf.nn.rnn_cell.DropoutWrapper(cell=cell, output_keep_prob=self.dropout)
+            # logging.warning("DropoutWrapper(cell=cell, output_keep_prob=self.dropout)")
+            # cell = tf.nn.rnn_cell.DropoutWrapper(cell=cell, output_keep_prob=self.dropout)
 
             outputs, encoding = tf.nn.dynamic_rnn(cell=cell, inputs=self.sent_embedding,
                                                   sequence_length=self.input_s_len,

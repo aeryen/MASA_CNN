@@ -217,11 +217,14 @@ class TrainTask:
                                                              self.test_data.sentence_len_trim,
                                                              self.test_data.doc_size_trim)),
                                                     self.batch_size * 2, 1)
+                dev_counter = 0
                 for dev_batch in dev_batches:
                     if len(dev_batch) > 0:
                         dev_x, dev_y, dev_s_len, dev_s_count = list(zip(*dev_batch))
                         dev_step(dev_x, dev_y, dev_s_len, dev_s_count)
-                        print("")
+                    dev_counter += 1
+                    if dev_counter >= 50:
+                        break
 
             if current_step % self.checkpoint_every == 0:
                 path = saver.save(sess, checkpoint_prefix, global_step=current_step)

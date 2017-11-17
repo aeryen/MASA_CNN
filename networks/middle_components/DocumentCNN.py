@@ -64,12 +64,12 @@ class DocumentCNN(object):
                 # [?, 64, 1, 300]
 
         # Combine all the pooled features
-        self.h_pool = tf.concat(values=pooled_outputs, axis=3)
+        self.last_layer = tf.concat(values=pooled_outputs, axis=3)
 
         # Add dropout
         with tf.name_scope("dropout-keep"):
             # [batch_size * sentence, num_filters_total]
-            self.last_layer = tf.nn.dropout(self.h_pool, self.dropout, name="h_drop_sentence")
+            # self.last_layer = tf.nn.dropout(self.last_layer, self.dropout, name="h_drop_sentence")
             # [batch_size, sentence * num_filters_total]
             self.last_layer = tf.reshape(self.last_layer, [-1, self.document_length, num_filters_total],
                                          name="h_drop_review")
