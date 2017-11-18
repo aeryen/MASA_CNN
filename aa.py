@@ -51,7 +51,7 @@ if __name__ == "__main__":
     data_name = "BeerAdvocateDoc"
     input_comp_name = "Document"
     middle_comp_name = "DocumentCNN"
-    output_comp_type = OutputNNType.LSAAR1Output
+    output_comp_type = OutputNNType.LSAAR1Output_SentFCOverall
 
     am = ArchiveManager(data_name=data_name, input_name=input_comp_name, middle_name=middle_comp_name,
                         output_name=output_comp_type.name)
@@ -69,16 +69,18 @@ if __name__ == "__main__":
                                    aspect_id=None, doc_as_sent=False, doc_level=True)
         if output_comp_type is OutputNNType.AAAB:
             ev = EvaluatorMultiAspectAAAB(data_helper=dater)
-        if output_comp_type is OutputNNType.LSAAR1Output:
+        elif output_comp_type is OutputNNType.LSAAR1Output:
             ev = EvaluatorMultiAspectRegression(data_helper=dater)
         else:
             ev = EvaluatorMultiAspect(data_helper=dater)
 
     elif data_name == "BeerAdvocateDoc":
-        dater = DataHelperBeer(embed_dim=300, target_doc_len=64, target_sent_len=64,
+        dater = DataHelperBeer(embed_dim=100, target_doc_len=64, target_sent_len=64,
                                aspect_id=None, doc_as_sent=False, doc_level=True)
         if output_comp_type is OutputNNType.AAAB:
             ev = EvaluatorMultiAspectAAAB(data_helper=dater)
+        elif output_comp_type is OutputNNType.AAABRegression:
+            ev = EvaluatorMultiAspectRegressionBeer(data_helper=dater)
         if output_comp_type is OutputNNType.LSAAR1Output or \
                 output_comp_type is OutputNNType.LSAAR1Output_SentFCOverall or \
                 output_comp_type is OutputNNType.LSAAR1Output_ShareScore:
@@ -95,7 +97,7 @@ if __name__ == "__main__":
                                                              data=dater.get_train_data(),
                                                              filter_size_lists=[[3, 4, 5]], num_filters=100,
                                                              batch_norm=None, elu=None,
-                                                             hidden_state_dim=384, fc=[])
+                                                             hidden_state_dim=300, fc=[])
         output_comp = CNNNetworkBuilder.get_output_component(output_type=output_comp_type,
                                                              input_comp=input_comp,
                                                              middle_comp=middle_comp,

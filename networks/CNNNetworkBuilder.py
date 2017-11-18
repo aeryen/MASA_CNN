@@ -8,6 +8,7 @@ from networks.input_components.OneSequence import OneSequence
 
 from networks.middle_components.SentenceCNN import SentenceCNN
 from networks.middle_components.DocumentCNN import DocumentCNN
+from networks.middle_components.DocumentCNNOld import DocumentCNNOld
 from networks.middle_components.DocumentGRU import DocumentGRU
 
 from networks.output_components.OriginOutput import OriginOutput
@@ -19,6 +20,7 @@ from networks.output_components.LSAAR1Output import LSAAR1Output
 from networks.output_components.LSAAR1Output_SentFCOverall import LSAAR1Output_SentFCOverall
 from networks.output_components.LSAAR1Output_ShareScore import LSAAR1Output_ShareScore
 from networks.output_components.AllAspectAvgBaseline import AllAspectAvgBaseline
+from networks.output_components.AllAspectAvgBaselineReg import AllAspectAvgBaselineReg
 
 
 class OutputNNType(Enum):
@@ -31,6 +33,7 @@ class OutputNNType(Enum):
     LSAAR1Output_SentFCOverall = 6
     LSAAR1Output_ShareScore = 7
     AAAB = 100
+    AAABRegression = 101
 
 
 class CNNNetworkBuilder:
@@ -65,7 +68,9 @@ class CNNNetworkBuilder:
         self.accuracy = self.output_comp.accuracy
         self.aspect_accuracy = self.output_comp.aspect_accuracy
 
-        if "R1" in type(self.output_comp).__name__ or "R2" in type(self.output_comp).__name__:
+        if "R1" in type(self.output_comp).__name__\
+                or "R2" in type(self.output_comp).__name__\
+                or "Reg" in type(self.output_comp).__name__:
             self.sqr_diff_sum = self.output_comp.sqr_diff_sum
             self.mse_aspects = self.output_comp.mse_aspects
 
@@ -99,6 +104,11 @@ class CNNNetworkBuilder:
                                       fc=fc)
         elif middle_name == "DocumentCNN":
             middle_comp = DocumentCNN(prev_comp=input_comp, data=data,
+                                      filter_size_lists=filter_size_lists, num_filters=num_filters,
+                                      batch_normalize=batch_norm, elu=elu,
+                                      fc=fc)
+        elif middle_name == "DocumentCNNOld":
+            middle_comp = DocumentCNNOld(prev_comp=input_comp, data=data,
                                       filter_size_lists=filter_size_lists, num_filters=num_filters,
                                       batch_normalize=batch_norm, elu=elu,
                                       fc=fc)
@@ -140,6 +150,9 @@ class CNNNetworkBuilder:
         elif output_type is OutputNNType.LSAAR1Output_ShareScore:
             output_comp = LSAAR1Output_ShareScore(input_comp=input_comp, prev_comp=middle_comp, data=data,
                                                   l2_reg_lambda=l2_reg, fc=fc)
+        elif output_type is OutputNNType.AAABRegression:
+            output_comp = AllAspectAvgBaselineReg(input_comp=input_comp, prev_comp=middle_comp, data=data,
+                                                  l2_reg_lambda=l2_reg)
         elif output_type is OutputNNType.AAAB:
             output_comp = AllAspectAvgBaseline(input_comp=input_comp, prev_comp=middle_comp, data=data,
                                                l2_reg_lambda=l2_reg)

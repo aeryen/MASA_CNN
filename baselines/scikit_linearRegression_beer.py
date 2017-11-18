@@ -29,9 +29,9 @@ tf_transformer = TfidfTransformer()
 X_train_tf = tf_transformer.fit_transform(X_train_counts)
 print(X_train_tf.shape)
 
-for i in range(5):
-    svm_file = open("./beer_data_123g/train_1g_aspect_" + str(i) + ".txt", mode="aw")
-    dump_svmlight_file(X=X_train_counts, y=file_train_rate[:, i], f=svm_file)
+# for i in range(5):
+#     svm_file = open("./beer_data_123g/train_1g_aspect_" + str(i) + ".txt", mode="aw")
+#     dump_svmlight_file(X=X_train_counts, y=file_train_rate[:, i], f=svm_file)
 
 """========================================================================"""
 
@@ -50,9 +50,9 @@ tf_transformer_test = TfidfTransformer()
 X_test_tf = tf_transformer_test.fit_transform(X_test_counts)
 print(X_test_tf.shape)
 
-for i in range(5):
-    svm_file = open("./beer_data_123g/test_1g_aspect_" + str(i) + ".txt", mode="aw")
-    dump_svmlight_file(X=X_test_counts, y=file_test_rate[:, i], f=svm_file)
+# for i in range(5):
+#     svm_file = open("./beer_data_123g/test_1g_aspect_" + str(i) + ".txt", mode="aw")
+#     dump_svmlight_file(X=X_test_counts, y=file_test_rate[:, i], f=svm_file)
 
 """========================================================================"""
 
@@ -80,6 +80,27 @@ for i in range(5):
     r2 = metrics.r2_score(file_test_rate[:, i], prediction_value)
     print(str(i) + " R2 : \t" + str(r2))
 
+    # 0
+    # MSE: 0.34614347157
+    # 0
+    # R2: 0.253128109181
+    # 1
+    # MSE: 0.271819155095
+    # 1
+    # R2: 0.197421855723
+    # 2
+    # MSE: 0.29491594588
+    # 2
+    # R2: 0.379525913328
+    # 3
+    # MSE: 0.308354002569
+    # 3
+    # R2: 0.256745484711
+    # 4
+    # MSE: 0.305605168265
+    # 4
+    # R2: 0.298364355247
+
 regr = linear_model.Lasso()
 
 for i in range(5):
@@ -91,6 +112,17 @@ for i in range(5):
 
     r2 = metrics.r2_score(file_test_rate[:, i], prediction_value)
     print(str(i) + " R2 : \t" + str(r2))
+
+# 0 MSE: 	0.264530767989
+# 0 R2 : 	0.429223396957
+# 1 MSE: 	0.210581518609
+# 1 R2 : 	0.378233206688
+# 2 MSE: 	0.22852811035
+# 2 R2 : 	0.519199376875
+# 3 MSE: 	0.240145478295
+# 3 R2 : 	0.4211548753
+# 4 MSE: 	0.235274329529
+# 4 R2 : 	0.459836177411
 
 clf = svm.SVR(kernel="linear", max_iter=20000, cache_size=500)
 for i in range(5):

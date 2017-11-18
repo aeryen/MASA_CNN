@@ -43,17 +43,19 @@ class DataHelperBeer(DataHelper):
         if self.aspect_id is None:
             y = [s.split(" ") for s in aspect_rating]
             y = np.array(y)
-            y = (y.astype(np.float32) - 1).astype(np.int32)
+            y = y.astype(np.float32) - 1
             y[y < 0] = 0
             y = y * 2  # Scale 0-4 to 0-8 to remove
+            y = y.astype(np.int32)
             # self.print_rating_distribution(y)
             y_onehot = self.to_onehot_3d(y, self.num_classes)
         else:
             y = [s.split(" ")[self.aspect_id] for s in aspect_rating]
             y = np.array(y)
-            y = (y.astype(np.float32) - 1).astype(np.int32)
+            y = y.astype(np.float32) - 1
             y[y < 0] = 0
             y = y * 2  # Scale 0-4 to 0-8 to remove
+            y = y.astype(np.int32)
             y_onehot = self.to_onehot(y, self.num_classes)
 
         content = list(open(self.dataset_dir + self.content_file[load_test], "r").readlines())
@@ -133,3 +135,6 @@ class DataHelperBeer(DataHelper):
 if __name__ == "__main__":
     a = DataHelperBeer(embed_dim=300, target_doc_len=64, target_sent_len=64, aspect_id=None,
                        doc_as_sent=False, doc_level=True)
+    t = a.get_train_data()
+
+    print()

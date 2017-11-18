@@ -38,10 +38,10 @@ class DataHelper(object):
         self.data_dir_path = os.path.join(os.path.dirname(__file__), '..', 'data/')
 
         print("loading embedding.")
-        glove_pickle = os.path.join(os.path.dirname(__file__), 'glove.pickle')
-        # [self.glove_words, self.glove_vectors] = self.load_glove_vector()
+        # glove_pickle = os.path.join(os.path.dirname(__file__), 'glove.pickle')
+        [self.glove_words, self.glove_vectors] = self.load_glove_vector()
         # pickle.dump([self.glove_words, self.glove_vectors], open("glove.pickle", "wb"))
-        self.glove_words, self.glove_vectors = pickle.load(open(glove_pickle, "rb"))
+        # self.glove_words, self.glove_vectors = pickle.load(open(glove_pickle, "rb"))
         print("loading embedding completed.")
 
     def get_train_data(self) -> DataObject:

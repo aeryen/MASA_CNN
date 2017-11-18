@@ -4,7 +4,7 @@ import logging
 from data_helpers.Data import DataObject
 
 
-class AllAspectAvgBaseline(object):
+class AllAspectAvgBaselineReg(object):
     def __init__(self, input_comp, prev_comp, data: DataObject, l2_reg_lambda):
         self.label = input_comp.input_y
         self.s_count = input_comp.input_s_count
@@ -57,30 +57,28 @@ class AllAspectAvgBaseline(object):
             self.scores = tf.reduce_sum(batch_sent_rating_aspect, 1, name="output_scores")
             print(("batch_review_aspect_score " + str(self.scores.get_shape())))
 
-            # [review, 6 aspect]
-            self.predictions = tf.argmax(self.scores, 2, name="output_value")
-            print(("self.predictions " + str(self.predictions.get_shape())))
+            self.predictions = tf.round(self.scores, name="output_value")
 
-        # CalculateMean cross-entropy loss
+        # CalculateMean Square Loss
+        self.mse_aspects = []
+        self.value_y = tf.cast(tf.argmax(self.label, 2, name="y_value"), dtype=tf.float32)
         with tf.name_scope("loss-lbd" + str(l2_reg_lambda)):
-            # sum_along_rating = tf.reduce_sum(batch_sent_rating_aspect_score, 1)
-            # self.normalized_dist = tf.div(batch_sent_rating_aspect_score, sum_along_rating)
-            losses = tf.constant(0.0)
+            self.sqr_diff_sum = tf.constant(0.0)
+            aspect_square_diff = tf.squared_difference(self.scores, self.value_y,
+                                                       name="review_aspect_sq_diff")
             for aspect_index in range(self.num_aspects):
-                aspect_losses = \
-                    tf.nn.softmax_cross_entropy_with_logits(logits=self.scores[:, aspect_index, :],
-                                                            labels=self.label[:, aspect_index, :],
-                                                            name="aspect_" + str(aspect_index) + "_loss")
-                losses = tf.add(losses, tf.reduce_mean(aspect_losses), name="aspect_loss_sum")
-            self.loss = losses + l2_reg_lambda * self.l2_sum
+                aspect_mse = tf.reduce_mean(aspect_square_diff[:, aspect_index], name="mse_a" + str(aspect_index))
+                self.mse_aspects.append(aspect_mse)
+                self.sqr_diff_sum = tf.add(self.sqr_diff_sum, aspect_mse, name="aspect_loss_sum")
+            self.loss = self.sqr_diff_sum + l2_reg_lambda * self.l2_sum
 
         # Accuracy
         with tf.name_scope("accuracy"):
             self.aspect_accuracy = []
             for aspect_index in range(self.num_aspects):
                 with tf.name_scope("aspect_" + str(aspect_index)):
-                    aspect_prediction = (tf.equal(self.predictions[:, aspect_index],
-                                                  tf.argmax(self.label[:, aspect_index, :], 1)))
-                    self.aspect_accuracy.append(tf.reduce_mean(tf.cast(aspect_prediction, "float"),
+                    aspect_prediction_logic = tf.equal(tf.round(self.scores[:, aspect_index]),
+                                                       self.value_y[:, aspect_index])
+                    self.aspect_accuracy.append(tf.reduce_mean(tf.cast(tf.stack(aspect_prediction_logic), "float"),
                                                                name="accuracy-" + str(aspect_index)))
             self.accuracy = tf.reduce_mean(tf.cast(tf.stack(self.aspect_accuracy), "float"), name="average-accuracy")
