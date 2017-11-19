@@ -2,7 +2,7 @@ import logging
 import os
 import datetime
 import tensorflow as tf
-from networks.CNNNetworkBuilder import CNNNetworkBuilder
+from networks.NetworkBuilder import NetworkBuilder
 from data_helpers.DataHelpers import DataHelper
 import utils.ArchiveManager as AM
 
@@ -110,9 +110,9 @@ class TrainTask:
         session_conf = tf.ConfigProto(allow_soft_placement=True, log_device_placement=False)
         sess = tf.Session(config=session_conf)
         if self.restore_dir is None:
-            cnn = CNNNetworkBuilder(input_comp=self.input_comp,
-                                    middle_comp=self.middle_comp,
-                                    output_comp=self.output_comp)
+            cnn = NetworkBuilder(input_comp=self.input_comp,
+                                 middle_comp=self.middle_comp,
+                                 output_comp=self.output_comp)
             graph_loss = cnn.loss
             graph_l2 = cnn.l2_sum
             if "R1" in type(self.output_comp).__name__\

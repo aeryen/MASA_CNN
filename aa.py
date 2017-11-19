@@ -3,8 +3,8 @@ import logging
 import tensorflow as tf
 
 from utils.ArchiveManager import ArchiveManager
-from networks.CNNNetworkBuilder import CNNNetworkBuilder
-from networks.CNNNetworkBuilder import OutputNNType
+from networks.NetworkBuilder import NetworkBuilder
+from networks.NetworkBuilder import OutputNNType
 from trainers.TrainTask import TrainTask
 
 from data_helpers.DataHelperHotelOne import DataHelperHotelOne
@@ -50,8 +50,8 @@ if __name__ == "__main__":
 
     data_name = "BeerAdvocateDoc"
     input_comp_name = "Document"
-    middle_comp_name = "DocumentCNN"
-    output_comp_type = OutputNNType.LSAAR1Output_SentFCOverall
+    middle_comp_name = "DocumentGRU"
+    output_comp_type = OutputNNType.LSAAR2Output_SentFCOverall
 
     am = ArchiveManager(data_name=data_name, input_name=input_comp_name, middle_name=middle_comp_name,
                         output_name=output_comp_type.name)
@@ -75,7 +75,7 @@ if __name__ == "__main__":
             ev = EvaluatorMultiAspect(data_helper=dater)
 
     elif data_name == "BeerAdvocateDoc":
-        dater = DataHelperBeer(embed_dim=300, target_doc_len=64, target_sent_len=64,
+        dater = DataHelperBeer(embed_dim=100, target_doc_len=64, target_sent_len=64,
                                aspect_id=None, doc_as_sent=False, doc_level=True)
         if output_comp_type is OutputNNType.AAAB:
             ev = EvaluatorMultiAspectAAAB(data_helper=dater)
@@ -92,16 +92,16 @@ if __name__ == "__main__":
 
     graph = tf.Graph()
     with graph.as_default():
-        input_comp = CNNNetworkBuilder.get_input_component(input_name=input_comp_name, data=dater.get_train_data())
-        middle_comp = CNNNetworkBuilder.get_middle_component(middle_name=middle_comp_name, input_comp=input_comp,
-                                                             data=dater.get_train_data(),
-                                                             filter_size_lists=[[3, 4, 5]], num_filters=100,
-                                                             batch_norm=None, elu=None,
-                                                             hidden_state_dim=300, fc=[])
-        output_comp = CNNNetworkBuilder.get_output_component(output_type=output_comp_type,
-                                                             input_comp=input_comp,
-                                                             middle_comp=middle_comp,
-                                                             data=dater.get_train_data(), l2_reg=0.2, fc=[0, 0])
+        input_comp = NetworkBuilder.get_input_component(input_name=input_comp_name, data=dater.get_train_data())
+        middle_comp = NetworkBuilder.get_middle_component(middle_name=middle_comp_name, input_comp=input_comp,
+                                                          data=dater.get_train_data(),
+                                                          filter_size_lists=[[3, 4, 5]], num_filters=100,
+                                                          batch_norm=None, elu=None,
+                                                          hidden_state_dim=300, fc=[])
+        output_comp = NetworkBuilder.get_output_component(output_type=output_comp_type,
+                                                          input_comp=input_comp,
+                                                          middle_comp=middle_comp,
+                                                          data=dater.get_train_data(), l2_reg=0.2, fc=[0, 0])
 
         tt = TrainTask(data_helper=dater, am=am,
                        input_component=input_comp,
