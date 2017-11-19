@@ -75,7 +75,7 @@ if __name__ == "__main__":
             ev = EvaluatorMultiAspect(data_helper=dater)
 
     elif data_name == "BeerAdvocateDoc":
-        dater = DataHelperBeer(embed_dim=100, target_doc_len=64, target_sent_len=64,
+        dater = DataHelperBeer(embed_dim=300, target_doc_len=64, target_sent_len=64,
                                aspect_id=None, doc_as_sent=False, doc_level=True)
         if output_comp_type is OutputNNType.AAAB:
             ev = EvaluatorMultiAspectAAAB(data_helper=dater)
@@ -107,7 +107,7 @@ if __name__ == "__main__":
                        input_component=input_comp,
                        middle_component=middle_comp,
                        output_component=output_comp,
-                       batch_size=32, total_step=20000, evaluate_every=500, checkpoint_every=1000, max_to_keep=10,
+                       batch_size=32, total_step=15000, evaluate_every=500, checkpoint_every=1000, max_to_keep=10,
                        restore_path=None)
 
         start = timer()

@@ -155,16 +155,17 @@ class EvaluatorMultiAspectRegressionBeer(Evaluator):
 
 if __name__ == "__main__":
     experiment_dir = "E:\\Research\\Paper 02\\MASA_CNN\\runs\\" \
-                     "BeerAdvocateDoc_Document_DocumentCNN_LSAAR1Output_SentFCOverall\\171117_1510979974\\"
+                     "BeerAdvocateDoc_Document_DocumentCNN_LSAAR1Output\\171118_1511029273\\"
     # checkpoint_steps = [4000, 4500, 5000, 5500, 6000, 6500, 7000, 7500, 8000, 8500]
     # checkpoint_steps = [9500, 10000, 10500, 11000, 11500, 12000, 12500, 13000, 13500, 14000]
     # checkpoint_steps = [1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000]
     # checkpoint_steps = [2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000, 11000]
     # checkpoint_steps = [3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000, 11000, 12000]
     # checkpoint_steps = [4000, 5000, 6000, 7000, 8000, 9000, 10000, 11000, 12000, 13000]
+    checkpoint_steps = [6000, 7000, 8000, 9000, 10000, 11000, 12000, 13000, 14000, 15000]
     # checkpoint_steps = [9000, 10000, 11000, 12000, 13000, 14000, 15000, 16000, 17000, 18000]
     # checkpoint_steps = [11000, 12000, 13000, 14000, 15000, 16000, 17000, 18000, 19000, 20000]
-    checkpoint_steps = [11000]
+    # checkpoint_steps = [11000]
 
     dater = DataHelperBeer(embed_dim=300, target_doc_len=64, target_sent_len=64,
                            aspect_id=None, doc_as_sent=False, doc_level=True)
