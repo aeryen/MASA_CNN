@@ -174,9 +174,9 @@ class VisualizerRegressionBeer(Evaluator):
 
 if __name__ == "__main__":
     experiment_dir = "E:\\Research\\Paper 02\\MASA_CNN\\runs\\" \
-                     "BeerAdvocateDoc_Document_DocumentCNN_LSAAR1Output_SentFCOverall\\171115_1510752233\\"
+                     "BeerAdvocateDoc_Document_DocumentGRU_LSAAR2Output_SentFCOverall\\171119_1511144793\\"
     # checkpoint_steps = [5500, 6000, 6500, 7000, 7500, 8000, 8500, 9000, 9500, 10000]
-    checkpoint_steps = [20000]
+    checkpoint_steps = [15000]
 
     # dater = DataHelperBeer(embed_dim=300, target_doc_len=64, target_sent_len=64,
     #                        aspect_id=None, doc_as_sent=False, doc_level=True)

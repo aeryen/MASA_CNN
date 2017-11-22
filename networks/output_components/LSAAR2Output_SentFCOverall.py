@@ -98,7 +98,7 @@ class LSAAR2Output_SentFCOverall(object):
                 # self.rating_score = tf.div(self.rating_score, tf.maximum(self.s_len, 1.0))
                 self.rating_score = tf.reshape(self.rating_score, [-1, 1], name="score_asp_div")
                 #
-                # self.rating_score = 4.0 * tf.sigmoid(self.rating_score, name="score_asp_sigmoid")
+                # self.rating_score = 4.0 * tf.sigmoid(self.rating_score, name="score_asp_sigmoid") - 2.0
 
         with tf.name_scope("related"):
             # logging.info("USING CNN BUILD IN DROP NOW")
@@ -153,6 +153,12 @@ class LSAAR2Output_SentFCOverall(object):
                                                   name="batch_sent_aspect_rating")
             print(("batch_sent_aspect_rating " + str(batch_sent_aspect_rating.get_shape())))
 
+            # TODO MASK
+            mask = tf.sequence_mask(self.s_count, maxlen=self.document_length)
+            mask = tf.expand_dims(mask, -1)
+            mask = tf.tile(mask, [1, 1, self.num_aspects - 1], name="sequence_mask")
+            batch_sent_aspect_rating = batch_sent_aspect_rating * tf.cast(mask, dtype=tf.float32)
+
             # [review, 5 aspect]
             self.batch_review_aspect_score = tf.reduce_sum(batch_sent_aspect_rating, axis=1, name="aspect_score_sum")
 
@@ -160,8 +166,11 @@ class LSAAR2Output_SentFCOverall(object):
             batch_sent_aspect_prob = tf.reshape(self.attri_dist, [-1, self.document_length, self.num_aspects])
             print(("batch_sent_aspect_prob " + str(batch_sent_aspect_prob.get_shape())))
 
+            # TODO MASK
+            batch_sent_aspect_prob = batch_sent_aspect_prob[:, :, 1:] * tf.cast(mask, dtype=tf.float32)
+
             # [review 64?, 5 aspect]
-            review_aspect_prob_sum = tf.reduce_sum(batch_sent_aspect_prob, 1, name="relate_ratio_sum")[:, 1:]
+            review_aspect_prob_sum = tf.reduce_sum(batch_sent_aspect_prob, 1, name="relate_ratio_sum")
 
             self.aspect_final_value = tf.div(self.batch_review_aspect_score, review_aspect_prob_sum,
                                              name="aspect_value_beforeadd")

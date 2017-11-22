@@ -11,10 +11,10 @@ from data_helpers.DataHelperHotelOne import DataHelperHotelOne
 from data_helpers.DataHelperBeer import DataHelperBeer
 
 from evaluators.EvaluatorOrigin import EvaluatorOrigin
-from evaluators.EvaluatorMultiAspect import EvaluatorMultiAspect
+from evaluators.EvaluatorMultiAspectC import EvaluatorMultiAspectC
 from evaluators.EvaluatorMultiAspectRegression import EvaluatorMultiAspectRegression
 from evaluators.EvaluatorMultiAspectRegressionBeer import EvaluatorMultiAspectRegressionBeer
-from evaluators.EvaluatorMultiAspectAAAB import EvaluatorMultiAspectAAAB
+from evaluators.EvaluatorMultiAspectC_AAAB import EvaluatorMultiAspectAAAB
 
 
 def get_exp_logger(am):
@@ -50,7 +50,7 @@ if __name__ == "__main__":
 
     data_name = "BeerAdvocateDoc"
     input_comp_name = "Document"
-    middle_comp_name = "DocumentGRU"
+    middle_comp_name = "DocumentCNN"
     output_comp_type = OutputNNType.LSAAR2Output_SentFCOverall
 
     am = ArchiveManager(data_name=data_name, input_name=input_comp_name, middle_name=middle_comp_name,
@@ -72,7 +72,7 @@ if __name__ == "__main__":
         elif output_comp_type is OutputNNType.LSAAR1Output:
             ev = EvaluatorMultiAspectRegression(data_helper=dater)
         else:
-            ev = EvaluatorMultiAspect(data_helper=dater)
+            ev = EvaluatorMultiAspectC(data_helper=dater)
 
     elif data_name == "BeerAdvocateDoc":
         dater = DataHelperBeer(embed_dim=100, target_doc_len=64, target_sent_len=64,
@@ -81,12 +81,12 @@ if __name__ == "__main__":
             ev = EvaluatorMultiAspectAAAB(data_helper=dater)
         elif output_comp_type is OutputNNType.AAABRegression:
             ev = EvaluatorMultiAspectRegressionBeer(data_helper=dater)
-        if output_comp_type is OutputNNType.LSAAR1Output or \
-                output_comp_type is OutputNNType.LSAAR1Output_SentFCOverall or \
-                output_comp_type is OutputNNType.LSAAR1Output_ShareScore:
+        if "R1" in type(output_comp_type).__name__ \
+                or "R2" in type(output_comp_type).__name__ \
+                or "Reg" in type(output_comp_type).__name__:
             ev = EvaluatorMultiAspectRegressionBeer(data_helper=dater)
         else:
-            ev = EvaluatorMultiAspect(data_helper=dater)
+            ev = EvaluatorMultiAspectC(data_helper=dater)
     else:
         raise NotImplementedError
 

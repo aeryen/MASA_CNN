@@ -42,7 +42,7 @@ class LSAAR1Output_SentFCOverall(object):
 
                     self.overall_hid_layer = tf.nn.xw_plus_b(self.sent_features, Wh_overall, bh_overall,
                                                              name="overall_hid")
-                    # self.overall_hid_layer = tf.nn.sigmoid(self.overall_hid_layer, name='overall_hid_elu')
+                    self.overall_hid_layer = tf.nn.sigmoid(self.overall_hid_layer, name='overall_hid_elu')
 
                     self.overall_hidden_feature_size = fc[0]
                 else:
@@ -77,7 +77,7 @@ class LSAAR1Output_SentFCOverall(object):
                     self.l2_sum += tf.nn.l2_loss(Wh)
 
                     self.rating_layer = tf.nn.xw_plus_b(self.sent_features, Wh, bh, name="rating_hid")
-                    # self.rating_layer = tf.nn.sigmoid(self.rating_layer, name='rating_hid_elu')
+                    self.rating_layer = tf.nn.sigmoid(self.rating_layer, name='rating_hid_elu')
 
                     self.hidden_feature_size = fc[0]
                 else:

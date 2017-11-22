@@ -69,7 +69,7 @@ class DocumentCNN(object):
         # Add dropout
         with tf.name_scope("dropout-keep"):
             # [batch_size * sentence, num_filters_total]
-            # self.last_layer = tf.nn.dropout(self.last_layer, self.dropout, name="h_drop_sentence")
+            self.last_layer = tf.nn.dropout(self.last_layer, self.dropout, name="h_drop_sentence")
             # [batch_size, sentence * num_filters_total]
             self.last_layer = tf.reshape(self.last_layer, [-1, self.document_length, num_filters_total],
                                          name="h_drop_review")
