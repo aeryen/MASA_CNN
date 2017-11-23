@@ -48,10 +48,10 @@ if __name__ == "__main__":
     # AAAB
     ################################################
 
-    data_name = "BeerAdvocateDoc"
+    data_name = "TripAdvisorDoc"
     input_comp_name = "Document"
-    middle_comp_name = "DocumentCNN"
-    output_comp_type = OutputNNType.LSAAR2Output_SentFCOverall
+    middle_comp_name = "DocumentGRU"
+    output_comp_type = OutputNNType.LSAAR1Output_SentFCOverall
 
     am = ArchiveManager(data_name=data_name, input_name=input_comp_name, middle_name=middle_comp_name,
                         output_name=output_comp_type.name)
@@ -65,11 +65,13 @@ if __name__ == "__main__":
         ev = EvaluatorOrigin(data_helper=dater)
 
     elif data_name == "TripAdvisorDoc":
-        dater = DataHelperHotelOne(embed_dim=300, target_doc_len=100, target_sent_len=64,
+        dater = DataHelperHotelOne(embed_dim=100, target_doc_len=100, target_sent_len=64,
                                    aspect_id=None, doc_as_sent=False, doc_level=True)
         if output_comp_type is OutputNNType.AAAB:
             ev = EvaluatorMultiAspectAAAB(data_helper=dater)
-        elif output_comp_type is OutputNNType.LSAAR1Output:
+        elif "R1" in type(output_comp_type).__name__ \
+                or "R2" in type(output_comp_type).__name__ \
+                or "Reg" in type(output_comp_type).__name__:
             ev = EvaluatorMultiAspectRegression(data_helper=dater)
         else:
             ev = EvaluatorMultiAspectC(data_helper=dater)
@@ -81,7 +83,7 @@ if __name__ == "__main__":
             ev = EvaluatorMultiAspectAAAB(data_helper=dater)
         elif output_comp_type is OutputNNType.AAABRegression:
             ev = EvaluatorMultiAspectRegressionBeer(data_helper=dater)
-        if "R1" in type(output_comp_type).__name__ \
+        elif "R1" in type(output_comp_type).__name__ \
                 or "R2" in type(output_comp_type).__name__ \
                 or "Reg" in type(output_comp_type).__name__:
             ev = EvaluatorMultiAspectRegressionBeer(data_helper=dater)
@@ -107,7 +109,7 @@ if __name__ == "__main__":
                        input_component=input_comp,
                        middle_component=middle_comp,
                        output_component=output_comp,
-                       batch_size=32, total_step=15000, evaluate_every=500, checkpoint_every=1000, max_to_keep=10,
+                       batch_size=32, total_step=10000, evaluate_every=500, checkpoint_every=1000, max_to_keep=10,
                        restore_path=None)
 
         start = timer()
