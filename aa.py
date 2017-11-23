@@ -11,10 +11,10 @@ from data_helpers.DataHelperHotelOne import DataHelperHotelOne
 from data_helpers.DataHelperBeer import DataHelperBeer
 
 from evaluators.EvaluatorOrigin import EvaluatorOrigin
-from evaluators.EvaluatorMultiAspectC import EvaluatorMultiAspectC
-from evaluators.EvaluatorMultiAspectRegression import EvaluatorMultiAspectRegression
-from evaluators.EvaluatorMultiAspectRegressionBeer import EvaluatorMultiAspectRegressionBeer
-from evaluators.EvaluatorMultiAspectC_AAAB import EvaluatorMultiAspectAAAB
+from evaluators.EvaluatorHotelClassification import EvaluatorMultiAspectC
+from evaluators.EvaluatorHotelRegression import EvaluatorMultiAspectRegression
+from evaluators.EvaluatorBeerRegression import EvaluatorMultiAspectRegressionBeer
+from evaluators.EvaluatorHotelAAABClassification import EvaluatorMultiAspectAAAB
 
 
 def get_exp_logger(am):
