@@ -19,7 +19,7 @@ aspect_name = ["Other", "Value", "Room", "Location", "Cleanliness", "Service"]
 # aspect_name = ["Other", "All", "Value", "Room", "Location", "Cleanliness", "Service"]
 
 
-class EvaluatorMultiAspectC(Evaluator):
+class EvaluatorHotelClassification(Evaluator):
     def __init__(self, data_helper: DataHelper, use_train_data=False):
         self.data_helper = data_helper
         self.use_train_data = use_train_data
@@ -148,5 +148,5 @@ if __name__ == "__main__":
     for step in checkpoint_steps:
         # dater = DataHelperHotelOne(embed_dim=300, target_sent_len=1024, target_doc_len=None,
         #                            aspect_id=1, doc_as_sent=True)
-        ev = EvaluatorMultiAspectC(data_helper=dater, use_train_data=False)
+        ev = EvaluatorHotelClassification(data_helper=dater, use_train_data=False)
         ev.evaluate(experiment_dir=experiment_dir, checkpoint_step=step)

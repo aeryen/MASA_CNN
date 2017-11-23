@@ -17,7 +17,7 @@ from tools.aspect_accuracy_human_beer import calc_aspect_f1
 aspect_name = ["none", "appearance", "taste", "palate", "aroma"]
 
 
-class EvaluatorMultiAspectRegressionBeer(Evaluator):
+class EvaluatorBeerRegression(Evaluator):
     def __init__(self, data_helper: DataHelper, use_train_data=False):
         self.data_helper = data_helper
         self.use_train_data = use_train_data
@@ -174,7 +174,7 @@ if __name__ == "__main__":
     global_mse_all = []
     global_asp_f1 = []
     for step in checkpoint_steps:
-        ev = EvaluatorMultiAspectRegressionBeer(data_helper=dater, use_train_data=False)
+        ev = EvaluatorBeerRegression(data_helper=dater, use_train_data=False)
         ev.evaluate(experiment_dir=experiment_dir, checkpoint_step=step,
                     global_mse_all=global_mse_all, global_asp_f1=global_asp_f1)
 

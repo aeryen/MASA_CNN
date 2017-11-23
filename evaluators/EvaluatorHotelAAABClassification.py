@@ -16,7 +16,7 @@ from data_helpers.DataHelperHotelOne import DataHelperHotelOne
 aspect_name = ["Other", "All", "Value", "Room", "Location", "Cleanliness", "Service"]
 
 
-class EvaluatorMultiAspectAAAB(Evaluator):
+class EvaluatorHotelAAABClassification(Evaluator):
     def __init__(self, data_helper: DataHelper):
         self.data_helper = data_helper
         self.test_data = self.data_helper.get_test_data()
@@ -104,5 +104,5 @@ if __name__ == "__main__":
     for step in checkpoint_steps:
         # dater = DataHelperHotelOne(embed_dim=300, target_sent_len=1024, target_doc_len=None,
         #                            aspect_id=1, doc_as_sent=True)
-        ev = EvaluatorMultiAspectAAAB(data_helper=dater)
+        ev = EvaluatorHotelAAABClassification(data_helper=dater)
         ev.evaluate(experiment_dir=experiment_dir, checkpoint_step=step)

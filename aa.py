@@ -11,10 +11,10 @@ from data_helpers.DataHelperHotelOne import DataHelperHotelOne
 from data_helpers.DataHelperBeer import DataHelperBeer
 
 from evaluators.EvaluatorOrigin import EvaluatorOrigin
-from evaluators.EvaluatorHotelClassification import EvaluatorMultiAspectC
-from evaluators.EvaluatorHotelRegression import EvaluatorMultiAspectRegression
-from evaluators.EvaluatorBeerRegression import EvaluatorMultiAspectRegressionBeer
-from evaluators.EvaluatorHotelAAABClassification import EvaluatorMultiAspectAAAB
+from evaluators.EvaluatorHotelClassification import EvaluatorHotelClassification
+from evaluators.EvaluatorHotelRegression import EvaluatorHotelRegression
+from evaluators.EvaluatorBeerRegression import EvaluatorBeerRegression
+from evaluators.EvaluatorHotelAAABClassification import EvaluatorHotelAAABClassification
 
 
 def get_exp_logger(am):
@@ -68,27 +68,27 @@ if __name__ == "__main__":
         dater = DataHelperHotelOne(embed_dim=100, target_doc_len=100, target_sent_len=64,
                                    aspect_id=None, doc_as_sent=False, doc_level=True)
         if output_comp_type is OutputNNType.AAAB:
-            ev = EvaluatorMultiAspectAAAB(data_helper=dater)
+            ev = EvaluatorHotelAAABClassification(data_helper=dater)
         elif "R1" in type(output_comp_type).__name__ \
                 or "R2" in type(output_comp_type).__name__ \
                 or "Reg" in type(output_comp_type).__name__:
-            ev = EvaluatorMultiAspectRegression(data_helper=dater)
+            ev = EvaluatorHotelRegression(data_helper=dater)
         else:
-            ev = EvaluatorMultiAspectC(data_helper=dater)
+            ev = EvaluatorHotelClassification(data_helper=dater)
 
     elif data_name == "BeerAdvocateDoc":
         dater = DataHelperBeer(embed_dim=100, target_doc_len=64, target_sent_len=64,
                                aspect_id=None, doc_as_sent=False, doc_level=True)
         if output_comp_type is OutputNNType.AAAB:
-            ev = EvaluatorMultiAspectAAAB(data_helper=dater)
+            ev = EvaluatorHotelAAABClassification(data_helper=dater)
         elif output_comp_type is OutputNNType.AAABRegression:
-            ev = EvaluatorMultiAspectRegressionBeer(data_helper=dater)
+            ev = EvaluatorBeerRegression(data_helper=dater)
         elif "R1" in type(output_comp_type).__name__ \
                 or "R2" in type(output_comp_type).__name__ \
                 or "Reg" in type(output_comp_type).__name__:
-            ev = EvaluatorMultiAspectRegressionBeer(data_helper=dater)
+            ev = EvaluatorBeerRegression(data_helper=dater)
         else:
-            ev = EvaluatorMultiAspectC(data_helper=dater)
+            ev = EvaluatorHotelClassification(data_helper=dater)
     else:
         raise NotImplementedError
 
