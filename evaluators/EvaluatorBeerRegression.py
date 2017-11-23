@@ -136,6 +136,7 @@ class EvaluatorBeerRegression(Evaluator):
         logging.info("MSE\t" + "\t".join(map(str, mse)))
         logging.info("AVG ALL\t" + str(np.mean(np.array(mse))))
         logging.info("AVG ASP\t" + str(np.mean(np.array(mse)[1:])))
+
         if global_mse_all is not None:
             global_mse_all.append(np.mean(np.array(mse)))
 

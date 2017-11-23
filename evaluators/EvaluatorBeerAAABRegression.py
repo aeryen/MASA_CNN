@@ -100,8 +100,7 @@ class EvaluatorMultiAspectAAABRegressionBeer(Evaluator):
         logging.info("ASP\t" + '\t'.join(map(str, range(self.test_data.num_aspects))))
         acc = []
         for aspect_index in range(self.test_data.num_aspects):
-            acc.append(
-                accuracy_score(y_true=rating_true[:, aspect_index], y_pred=np.round(rating_pred[:, aspect_index])))
+            acc.append(accuracy_score(y_true=rating_true[:, aspect_index], y_pred=np.round(rating_pred[:, aspect_index])))
         logging.info("ACC\t" + "\t".join(map(str, acc)))
         logging.info("AVG ALL\t" + str(np.mean(np.array(acc))))
         logging.info("AVG ASP\t" + str(np.mean(np.array(acc)[1:])))
@@ -145,7 +144,5 @@ if __name__ == "__main__":
     global_mse_all = []
     global_asp_f1 = []
     for step in checkpoint_steps:
-        # dater = DataHelperHotelOne(embed_dim=300, target_sent_len=1024, target_doc_len=None,
-        #                            aspect_id=1, doc_as_sent=True)
         ev = EvaluatorMultiAspectAAABRegressionBeer(data_helper=dater)
         ev.evaluate(experiment_dir=experiment_dir, checkpoint_step=step)

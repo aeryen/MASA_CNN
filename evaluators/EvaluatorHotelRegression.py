@@ -107,10 +107,10 @@ class EvaluatorHotelRegression(Evaluator):
                 rating_true = np.argmax(self.test_data.label_instance, axis=2)
                 clean_aspect_max = np.argmax(clean_aspect_dist[:, 1:], axis=1)  # TODO limit aspect here
 
-                sentence_aspect_names = [aspect_name[i+1] for i in clean_aspect_max]
+                sentence_aspect_names = [aspect_name[i+1] for i in clean_aspect_max]  # TODO limit aspect here
 
         with open(self.result_dir + '\\' + str(checkpoint_step) + '_aspect_rating.out', 'wb') as f:
-            np.savetxt(f, rating_pred, fmt='%d', delimiter='\t')
+            np.savetxt(f, np.round(rating_pred), fmt='%d', delimiter='\t')
         with open(self.result_dir + '\\' + str(checkpoint_step) + '_aspect_dist.out', 'wb') as f:
             np.savetxt(f, clean_aspect_dist, fmt='%1.5f', delimiter='\t')
         # np.savetxt(experiment_dir + '/aspect_related.out', clean_aspect_max, fmt='%1.0f')
@@ -123,7 +123,8 @@ class EvaluatorHotelRegression(Evaluator):
         logging.info("ASP\t" + '\t'.join(map(str, range(self.test_data.num_aspects))))
         acc = []
         for aspect_index in range(self.test_data.num_aspects):
-            acc.append(accuracy_score(y_true=rating_true[:, aspect_index], y_pred=np.round(rating_pred[:, aspect_index])))
+            acc.append(
+                accuracy_score(y_true=rating_true[:, aspect_index], y_pred=np.round(rating_pred[:, aspect_index])))
         logging.info("ACC\t" + "\t".join(map(str, acc)))
         logging.info("AVG ALL\t" + str(np.mean(np.array(acc))))
         logging.info("AVG ASP\t" + str(np.mean(np.array(acc)[1:])))
@@ -155,10 +156,9 @@ if __name__ == "__main__":
     global_mse_all = []
     global_asp_f1 = []
     for step in checkpoint_steps:
-        # dater = DataHelperHotelOne(embed_dim=300, target_sent_len=1024, target_doc_len=None,
-        #                            aspect_id=1, doc_as_sent=True)
         ev = EvaluatorHotelRegression(data_helper=dater, use_train_data=False)
-        ev.evaluate(experiment_dir=experiment_dir, checkpoint_step=step)
+        ev.evaluate(experiment_dir=experiment_dir, checkpoint_step=step,
+                    global_mse_all=global_mse_all, global_asp_f1=global_asp_f1)
 
     fig, ax1 = plt.subplots()
     ax1.plot(checkpoint_steps, global_mse_all, 'b-')
