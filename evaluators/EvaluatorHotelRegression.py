@@ -136,7 +136,7 @@ class EvaluatorHotelRegression(Evaluator):
         logging.info("AVG ASP\t" + str(np.mean(np.array(mse)[1:])))
 
         if global_mse_all is not None:
-            global_mse_all.append(np.mean(np.array(acc)))
+            global_mse_all.append(np.mean(np.array(mse)))
 
         yifan_f1, fan_f1 = calc_aspect_f1(input_dir=experiment_dir, step=checkpoint_step)
         if global_asp_f1 is not None:
