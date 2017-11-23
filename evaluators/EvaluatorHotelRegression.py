@@ -6,8 +6,8 @@ from sklearn.metrics import accuracy_score
 import tensorflow as tf
 import os
 import logging
+import matplotlib.pyplot as plt
 
-from data_helpers.Data import DataObject
 from evaluators.Evaluator import Evaluator
 from data_helpers.DataHelpers import DataHelper
 import utils.ArchiveManager as AM
@@ -15,7 +15,6 @@ from data_helpers.DataHelperHotelOne import DataHelperHotelOne
 from tools.aspect_accuracy_human import calc_aspect_f1
 
 aspect_name = ["Other", "Value", "Room", "Location", "Cleanliness", "Service"]
-
 # aspect_name = ["Other", "All", "Value", "Room", "Location", "Cleanliness", "Service"]
 
 
@@ -29,8 +28,10 @@ class EvaluatorHotelRegression(Evaluator):
             self.test_data = self.data_helper.get_train_data()
 
         self.eval_log = None
+        self.result_dir = None
 
-    def evaluate(self, experiment_dir, checkpoint_step, doc_acc=True, do_is_training=True):
+    def evaluate(self, experiment_dir, checkpoint_step, doc_acc=True, do_is_training=True,
+                 global_mse_all=None, global_asp_f1=None):
         if checkpoint_step is not None:
             checkpoint_file = experiment_dir + "/checkpoints/" + "model-" + str(checkpoint_step)
         else:
@@ -134,7 +135,12 @@ class EvaluatorHotelRegression(Evaluator):
         logging.info("AVG ALL\t" + str(np.mean(np.array(mse))))
         logging.info("AVG ASP\t" + str(np.mean(np.array(mse)[1:])))
 
-        calc_aspect_f1(input_dir=experiment_dir, step=checkpoint_step)
+        if global_mse_all is not None:
+            global_mse_all.append(np.mean(np.array(acc)))
+
+        yifan_f1, fan_f1 = calc_aspect_f1(input_dir=experiment_dir, step=checkpoint_step)
+        if global_asp_f1 is not None:
+            global_asp_f1.append(yifan_f1)
 
 
 if __name__ == "__main__":
@@ -145,8 +151,25 @@ if __name__ == "__main__":
     dater = DataHelperHotelOne(embed_dim=300, target_doc_len=100, target_sent_len=64,
                                aspect_id=None, doc_as_sent=False, doc_level=True)
 
+    global_mse_all = []
+    global_asp_f1 = []
     for step in checkpoint_steps:
         # dater = DataHelperHotelOne(embed_dim=300, target_sent_len=1024, target_doc_len=None,
         #                            aspect_id=1, doc_as_sent=True)
         ev = EvaluatorHotelRegression(data_helper=dater, use_train_data=False)
         ev.evaluate(experiment_dir=experiment_dir, checkpoint_step=step)
+
+    fig, ax1 = plt.subplots()
+    ax1.plot(checkpoint_steps, global_mse_all, 'b-')
+    ax1.set_xlabel('steps')
+    ax1.set_ylabel('MSE', color='b')
+    ax1.tick_params('y', colors='b')
+    plt.gca().invert_yaxis()
+
+    ax2 = ax1.twinx()
+    ax2.plot(checkpoint_steps, global_asp_f1, 'r-')
+    ax2.set_ylabel('ASP', color='r')
+    ax2.tick_params('y', colors='r')
+
+    fig.tight_layout()
+    plt.show()
