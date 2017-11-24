@@ -145,10 +145,11 @@ class EvaluatorHotelRegression(Evaluator):
 
 
 if __name__ == "__main__":
-    experiment_dir = "E:\\Research\\Paper 02\\MASA_CNN\\runs\\" \
-                     "TripAdvisorDoc_Document_DocumentGRU_LSAAR1Output_SentFCOverall\\171123_1511465416\\"
+    experiment_dir = "C:\\Project\\MASA_CNN\\runs\\" \
+                     "TripAdvisorDoc_Document_DocumentGRU_LSAAR2Output_SentFCOverall\\171123_1511498050\\"
     # checkpoint_steps = [3500, 4000, 4500, 5000, 5500, 6000, 6500, 7000, 7500, 8000]
-    checkpoint_steps = [1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000]
+    # checkpoint_steps = [1000, 2000, 3000, 4000, 5000, 6000, 7000]
+    checkpoint_steps = [500, 1000, 1500, 2000, 2500, 3000, 3500, 4000]
 
     dater = DataHelperHotelOne(embed_dim=100, target_doc_len=100, target_sent_len=64,
                                aspect_id=None, doc_as_sent=False, doc_level=True)
