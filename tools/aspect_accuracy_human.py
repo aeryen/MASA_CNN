@@ -1,4 +1,5 @@
 from sklearn.metrics import classification_report
+from sklearn.metrics import f1_score
 import os
 import logging
 
@@ -13,6 +14,9 @@ def calc_aspect_f1(input_dir, step):
     predict_aspect_list = list(open(input_dir + str(step) + "_aspect_related_name.out", "r").readlines())
     predict_aspect_list = [s.strip().lower() for s in predict_aspect_list if (len(s) > 0 and s != "\n")]
     predict_aspect_list = ['none' if s == 'all' else s for s in predict_aspect_list]
+
+    aspect_set = set(predict_aspect_list)
+    logging.info("Aspect Set: " + str(aspect_set))
 
     data_dir = os.path.join(os.path.dirname(__file__), '..',
                             'data',
@@ -29,6 +33,9 @@ def calc_aspect_f1(input_dir, step):
     aspect_fan = [s[0] for s in file_fan]
     polar_fan = [s[1] for s in file_fan]
 
+    aspect_set = set(aspect_fan)
+    print("fan set:" + str(aspect_set))
+
     aspect_keywords = [["none"], ["value"], ["room"], ["location"], ["cleanliness"], ["service"]]
     logging.info('\n')
 
@@ -42,4 +49,7 @@ def calc_aspect_f1(input_dir, step):
                                        labels=["value", "room", "location", "cleanliness", "service"], digits=2)
     logging.info(result_fan)
 
-    return [result_yifan, result_fan]
+    yifan_f1 = f1_score(aspect_yifan[:500], predict_aspect_list[:500], average='micro')
+    fan_f1 = f1_score(aspect_fan[:600], predict_aspect_list[:600], average='micro')
+
+    return [yifan_f1, fan_f1]

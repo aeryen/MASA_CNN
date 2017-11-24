@@ -67,6 +67,8 @@ class LSAAR1Output_SentFCOverall(object):
                 self.overall_scores = tf.expand_dims(tf.div(self.overall_scores, self.s_count, name="scores_all"),
                                                      axis=-1)
 
+                self.overall_scores = 4.0 * tf.sigmoid(self.overall_scores, name="score_overall_sigmoid")
+
             with tf.name_scope("aspect"):
                 if fc and fc[0] > 0:
                     Wh = tf.get_variable(
@@ -97,8 +99,8 @@ class LSAAR1Output_SentFCOverall(object):
                 self.rating_score = tf.reshape(self.rating_score, [-1, data.target_doc_len])
                 # self.rating_score = tf.div(self.rating_score, tf.maximum(self.s_len, 1.0))
                 self.rating_score = tf.reshape(self.rating_score, [-1, 1], name="score_asp_div")
-                #
-                # self.rating_score = 4.0 * tf.sigmoid(self.rating_score, name="score_asp_sigmoid")
+
+                self.rating_score = 4.0 * tf.sigmoid(self.rating_score, name="score_asp_sigmoid")
 
         with tf.name_scope("related"):
             # logging.info("USING CNN BUILD IN DROP NOW")

@@ -109,7 +109,7 @@ if __name__ == "__main__":
                        input_component=input_comp,
                        middle_component=middle_comp,
                        output_component=output_comp,
-                       batch_size=32, total_step=10000, evaluate_every=500, checkpoint_every=1000, max_to_keep=10,
+                       batch_size=32, total_step=20000, evaluate_every=500, checkpoint_every=1000, max_to_keep=10,
                        restore_path=None)
 
         start = timer()

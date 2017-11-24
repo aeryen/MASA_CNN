@@ -146,7 +146,7 @@ class EvaluatorHotelRegression(Evaluator):
 
 if __name__ == "__main__":
     experiment_dir = "E:\\Research\\Paper 02\\MASA_CNN\\runs\\" \
-                     "TripAdvisorDoc_Document_DocumentGRU_LSAAR1Output_SentFCOverall\\171122_1511396523\\"
+                     "TripAdvisorDoc_Document_DocumentGRU_LSAAR1Output_SentFCOverall\\171123_1511465416\\"
     # checkpoint_steps = [3500, 4000, 4500, 5000, 5500, 6000, 6500, 7000, 7500, 8000]
     checkpoint_steps = [1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000]
 
