@@ -69,9 +69,9 @@ if __name__ == "__main__":
                                    aspect_id=None, doc_as_sent=False, doc_level=True)
         if output_comp_type is OutputNNType.AAAB:
             ev = EvaluatorHotelAAABClassification(data_helper=dater)
-        elif "R1" in type(output_comp_type).__name__ \
-                or "R2" in type(output_comp_type).__name__ \
-                or "Reg" in type(output_comp_type).__name__:
+        elif "R1" in output_comp_type.name\
+                or "R2" in output_comp_type.name \
+                or "Reg" in output_comp_type.name:
             ev = EvaluatorHotelRegression(data_helper=dater)
         else:
             ev = EvaluatorHotelClassification(data_helper=dater)
@@ -83,9 +83,9 @@ if __name__ == "__main__":
             ev = EvaluatorHotelAAABClassification(data_helper=dater)
         elif output_comp_type is OutputNNType.AAABRegression:
             ev = EvaluatorBeerRegression(data_helper=dater)
-        elif "R1" in type(output_comp_type).__name__ \
-                or "R2" in type(output_comp_type).__name__ \
-                or "Reg" in type(output_comp_type).__name__:
+        elif "R1" in output_comp_type.name \
+                or "R2" in output_comp_type.name \
+                or "Reg" in output_comp_type.name:
             ev = EvaluatorBeerRegression(data_helper=dater)
         else:
             ev = EvaluatorHotelClassification(data_helper=dater)
@@ -99,17 +99,17 @@ if __name__ == "__main__":
                                                           data=dater.get_train_data(),
                                                           filter_size_lists=[[3, 4, 5]], num_filters=100,
                                                           batch_norm=None, elu=None,
-                                                          hidden_state_dim=300, fc=[])
+                                                          hidden_state_dim=200, fc=[])
         output_comp = NetworkBuilder.get_output_component(output_type=output_comp_type,
                                                           input_comp=input_comp,
                                                           middle_comp=middle_comp,
-                                                          data=dater.get_train_data(), l2_reg=0.2, fc=[0, 0])
+                                                          data=dater.get_train_data(), l2_reg=0.0, fc=[0, 0])
 
         tt = TrainTask(data_helper=dater, am=am,
                        input_component=input_comp,
                        middle_component=middle_comp,
                        output_component=output_comp,
-                       batch_size=32, total_step=20000, evaluate_every=500, checkpoint_every=1000, max_to_keep=10,
+                       batch_size=32, total_step=6000, evaluate_every=500, checkpoint_every=500, max_to_keep=10,
                        restore_path=None)
 
         start = timer()
