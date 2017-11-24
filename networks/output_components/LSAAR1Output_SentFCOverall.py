@@ -114,7 +114,7 @@ class LSAAR1Output_SentFCOverall(object):
                     shape=[self.sentence_feature_size, fc[1]],
                     initializer=tf.contrib.layers.xavier_initializer())
                 bh = tf.Variable(tf.constant(0.1, shape=[fc[1]]), name="bh")
-                self.l2_sum += 0.5 * tf.nn.l2_loss(Wh)
+                self.l2_sum += tf.nn.l2_loss(Wh)
 
                 self.aspect_layer = tf.nn.xw_plus_b(sent_feat_related_drop, Wh, bh, name="relate_hid")
                 self.aspect_layer = tf.nn.elu(self.aspect_layer, name='relate_hid_elu')
@@ -129,11 +129,11 @@ class LSAAR1Output_SentFCOverall(object):
                 shape=[self.hidden_feature_size, self.num_aspects],
                 initializer=tf.contrib.layers.xavier_initializer())
             b = tf.Variable(tf.constant(0.1, shape=[self.num_aspects]), name="b_r")
-            self.l2_sum += 0.5 * tf.nn.l2_loss(W)
+            self.l2_sum += tf.nn.l2_loss(W)
 
             self.attri_scores = tf.nn.xw_plus_b(self.aspect_layer, W, b, name="scores_related")
             # [batch_size * sentence, num_aspects]
-            self.attri_dist = tf.nn.softmax(self.attri_scores, name="softmax_related")
+            self.attri_dist = tf.nn.softmax(self.attri_scores * 10, name="softmax_related")
             print(("self.related_distribution " + str(self.attri_dist.get_shape())))
 
         # Final (unnormalized) scores and predictions

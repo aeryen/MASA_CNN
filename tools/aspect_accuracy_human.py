@@ -49,7 +49,7 @@ def calc_aspect_f1(input_dir, step):
                                        labels=["value", "room", "location", "cleanliness", "service"], digits=2)
     logging.info(result_fan)
 
-    yifan_f1 = f1_score(aspect_yifan[:500], predict_aspect_list[:500], average='micro')
-    fan_f1 = f1_score(aspect_fan[:600], predict_aspect_list[:600], average='micro')
+    yifan_f1 = f1_score(aspect_yifan[:500], predict_aspect_list[:500], average='macro')
+    fan_f1 = f1_score(aspect_fan[:600], predict_aspect_list[:600], average='macro')
 
     return [yifan_f1, fan_f1]
